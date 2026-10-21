@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>3DPRINTECH</title>
+<meta name="theme-color" content="#13223D">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="3DPRINTECH">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+:root{
+  --bg:#F1F3F6;--surface:#fff;--surface-2:#F5F7FA;--ink:#172235;--muted:#5B6779;--line:#DCE2E9;
+  --navy:#13223D;--accent:#2F68B0;--accent-ink:#fff;--accent-soft:#E3ECF7;
+  --orange:#E2973B;--orange-ink:#8A520D;--orange-soft:#FBEBD6;
+  --ok:#2C7A4E;--ok-soft:#E0F0E6;--warn:#946210;--warn-soft:#F6ECD3;--bad:#B03A2E;--bad-soft:#F6E0DC;
+  --b-mat:#2F68B0;--b-luz:#D6A032;--b-des:#6B8794;--b-fon:#E08C2C;--b-mi:#2E8A57;
+  --r:16px;--safe-b:env(safe-area-inset-bottom,0px);--safe-t:env(safe-area-inset-top,0px);
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root{
+  --bg:#0E1420;--surface:#172030;--surface-2:#1D2839;--ink:#E7ECF3;--muted:#9DAABD;--line:#2C394D;
+  --accent:#6FA3E6;--accent-ink:#0B1422;--accent-soft:#1E3150;--orange:#EFA24E;--orange-ink:#F5C38A;--orange-soft:#3A2C1A;
+  --ok:#6CC08F;--ok-soft:#1C3326;--warn:#E0AE4C;--warn-soft:#3A3020;--bad:#EB8174;--bad-soft:#3F2522;
+  --b-mat:#6FA3E6;--b-luz:#E6B64F;--b-des:#8FA9B5;--b-fon:#EFA24E;--b-mi:#5DBE86;color-scheme:dark}}
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:16px;line-height:1.45;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;overscroll-behavior-y:none}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+h1,h2,h3{margin:0;line-height:1.2}
+p{margin:0}
+.hidden{display:none!important}
+.muted{color:var(--muted)}.small{font-size:.86rem}.neg{color:var(--bad)}.pos{color:var(--ok)}
+
+/* Barra superior */
+.top{position:sticky;top:0;z-index:20;background:var(--navy);color:#fff;padding:calc(var(--safe-t) + 10px) 16px 12px;display:flex;align-items:center;gap:12px}
+.top img{width:38px;height:38px;border-radius:10px;background:#fff;padding:2px}
+.top .t{flex:1;min-width:0}
+.top b{display:block;font-size:1.06rem;font-weight:800;letter-spacing:.02em}
+.top .sync{font-size:.78rem;color:#B9C5D6;display:flex;align-items:center;gap:6px}
+.top .sync i{width:8px;height:8px;border-radius:50%;background:#8EA0B8;display:inline-block}
+.top .sync.ok i{background:#5DBE86}.top .sync.busy i{background:#E6B64F}.top .sync.off i{background:#EB8174}
+.top button.icon{background:rgba(255,255,255,.12);border:0;color:#fff;border-radius:10px;width:40px;height:40px;display:grid;place-items:center;cursor:pointer}
+
+/* Contenido */
+main{padding:16px 16px calc(96px + var(--safe-b));max-width:860px;margin:0 auto}
+.page-h{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;margin:4px 0 14px}
+.page-h h1{font-size:1.6rem;font-weight:800}
+.page-h p{color:var(--muted);font-size:.92rem;margin-top:2px}
+.stack{display:flex;flex-direction:column;gap:12px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px}
+.card h2{font-size:1.05rem;font-weight:700;margin-bottom:10px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.spread{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.big{font-size:2.2rem;font-weight:800;letter-spacing:-.02em;line-height:1.05}
+.mid{font-size:1.4rem;font-weight:800}
+.lbl{font-size:.85rem;color:var(--muted)}
+
+/* Botones */
+.btn{appearance:none;border:0;background:var(--accent);color:var(--accent-ink);font-weight:700;border-radius:12px;padding:13px 18px;min-height:48px;cursor:pointer;font-size:1rem;display:inline-flex;align-items:center;justify-content:center;gap:8px}
+.btn.full{width:100%}
+.btn.sec{background:var(--surface-2);color:var(--ink);border:1px solid var(--line)}
+.btn.ok{background:var(--ok);color:#fff}
+.btn.orange{background:var(--orange);color:#1d1203}
+.btn.danger{background:transparent;color:var(--bad);border:1px solid var(--line)}
+.btn.sm{min-height:38px;padding:8px 12px;font-size:.9rem;border-radius:10px}
+.btn:disabled{opacity:.5}
+.linkbtn{background:none;border:0;color:var(--accent);font-weight:650;padding:6px 0;cursor:pointer}
+
+/* Inicio: botones grandes */
+.tiles{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tile{border:0;border-radius:20px;padding:18px 16px;min-height:118px;text-align:left;display:flex;flex-direction:column;justify-content:space-between;cursor:pointer;color:#fff;font-weight:800;font-size:1.15rem}
+.tile svg{width:34px;height:34px}
+.tile span{font-weight:500;font-size:.85rem;opacity:.9}
+.t-venta{background:#2E8A57}.t-dent{background:#2F68B0}.t-rollo{background:#E2973B;color:#1d1203}.t-cot{background:#13223D}
+@media (prefers-color-scheme:dark){.t-cot{background:#2A3E62}}
+.alert{border-radius:14px;padding:12px 14px;display:flex;gap:12px;align-items:center;justify-content:space-between;background:var(--warn-soft);color:var(--ink)}
+.alert.info{background:var(--accent-soft)}.alert.bad{background:var(--bad-soft)}.alert.good{background:var(--ok-soft)}
+.alert b{display:block}.alert p{font-size:.88rem;color:var(--muted)}
+
+/* Formularios */
+label.f{display:flex;flex-direction:column;gap:5px;font-size:.88rem;color:var(--muted);font-weight:600}
+input,select,textarea{width:100%;border:1px solid var(--line);background:var(--surface);border-radius:12px;padding:12px 13px;font-size:1rem;min-height:48px}
+textarea{min-height:80px;resize:vertical}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+input.money{font-size:1.6rem;font-weight:800;padding:10px 13px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+.seg{display:flex;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:3px;gap:3px}
+.seg button{flex:1;border:0;background:transparent;border-radius:9px;padding:10px;font-weight:650;color:var(--muted);cursor:pointer;min-height:42px}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 6px;scrollbar-width:none}
+.chips.wrap{flex-wrap:wrap;overflow:visible}
+.chip{flex:none;display:inline-flex;align-items:center;gap:8px;border:2px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 13px 7px 8px;font-weight:650;font-size:.92rem;cursor:pointer;white-space:nowrap;min-height:44px}
+.chip.plain{padding:7px 14px}
+.chip[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.chip small{color:var(--muted);font-weight:500}
+.sw{display:inline-block;width:24px;height:24px;border-radius:50%;border:1px solid rgba(0,0,0,.18);flex:none}
+.stepper{display:flex;align-items:center;justify-content:center;gap:18px}
+.stepper button{width:56px;height:56px;border-radius:50%;border:1px solid var(--line);background:var(--surface-2);font-size:1.8rem;font-weight:700;cursor:pointer}
+.stepper output{font-size:2.6rem;font-weight:800;min-width:70px;text-align:center}
+details.more{border-top:1px dashed var(--line);padding-top:10px}
+details.more summary{cursor:pointer;color:var(--accent);font-weight:650;list-style:none}
+details.more summary::-webkit-details-marker{display:none}
+
+/* Barras de reparto */
+.bar{display:flex;height:12px;border-radius:6px;overflow:hidden;background:var(--surface-2)}
+.bar i{display:block;height:100%}
+.c-mat{background:var(--b-mat)}.c-luz{background:var(--b-luz)}.c-des{background:var(--b-des)}.c-fon{background:var(--b-fon)}.c-mi{background:var(--b-mi)}
+.legend{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;margin-top:10px;font-size:.88rem}
+.legend div{display:flex;align-items:center;gap:7px}
+.legend b{margin-left:auto;font-weight:700}
+.legend i{width:10px;height:10px;border-radius:3px;flex:none}
+
+/* Listas */
+.list{display:flex;flex-direction:column}
+.item{display:flex;gap:12px;align-items:center;padding:12px 2px;border-bottom:1px solid var(--line);background:none;border-left:0;border-right:0;border-top:0;width:100%;text-align:left;cursor:pointer;color:inherit}
+.item:last-child{border-bottom:0}
+.item .txt{flex:1;min-width:0}
+.item .txt b{display:block;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .txt span{display:block;font-size:.84rem;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item .amt{font-weight:750;white-space:nowrap}
+.tag{display:inline-block;font-size:.74rem;font-weight:700;border-radius:999px;padding:2px 9px;background:var(--surface-2);color:var(--muted)}
+.tag.ok{background:var(--ok-soft);color:var(--ok)}.tag.warn{background:var(--warn-soft);color:var(--warn)}.tag.bad{background:var(--bad-soft);color:var(--bad)}.tag.acc{background:var(--accent-soft);color:var(--accent)}
+.empty{text-align:center;color:var(--muted);padding:22px 10px}
+.empty b{display:block;color:var(--ink);margin-bottom:4px}
+
+/* Rollos */
+.spools{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.spool{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;text-align:center;color:inherit;font:inherit}
+.spool .sw{width:58px;height:58px}
+.spool b{font-weight:700}
+.spool .g{font-size:1.25rem;font-weight:800}
+.meter{width:100%;height:8px;border-radius:4px;background:var(--surface-2);overflow:hidden}
+.meter span{display:block;height:100%;background:var(--accent)}
+.spool.low{border-color:var(--orange)}.spool.low .meter span{background:var(--orange)}
+.spool.add{border-style:dashed;justify-content:center;color:var(--accent);font-weight:700;min-height:150px}
+.colors{display:grid;grid-template-columns:repeat(7,1fr);gap:10px}
+.colors button{aspect-ratio:1;border-radius:50%;border:3px solid transparent;cursor:pointer;box-shadow:inset 0 0 0 1px rgba(0,0,0,.18)}
+.colors button[aria-pressed="true"]{border-color:var(--accent)}
+.paleta{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:12px}
+.pc{display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center}
+.pc .sw{width:64px;height:64px}
+.pc.no{opacity:.35}
+
+/* Cotizar */
+.prod{border:1px solid var(--line);border-radius:14px;padding:12px;background:var(--surface-2)}
+.prod input,.prod select{background:var(--surface)}
+.price-row{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:10px}
+.price-row .p{font-size:1.5rem;font-weight:800}
+.total-bar{position:sticky;bottom:calc(76px + var(--safe-b));z-index:5;background:var(--navy);color:#fff;border-radius:16px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:10px;box-shadow:0 8px 24px rgba(0,0,0,.18)}
+.total-bar .big{font-size:1.8rem}
+.kv{display:flex;flex-direction:column}
+.kv div{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed var(--line);font-size:.92rem}
+.kv div:last-child{border-bottom:0}
+.kv div span:first-child{color:var(--muted)}
+
+/* Navegación inferior */
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;background:var(--surface);border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);padding-bottom:var(--safe-b)}
+nav.tabs button{border:0;background:none;padding:8px 2px 10px;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:.72rem;font-weight:650;color:var(--muted);cursor:pointer;position:relative}
+nav.tabs svg{width:25px;height:25px}
+nav.tabs button[aria-current="page"]{color:var(--accent)}
+nav.tabs .dot{position:absolute;top:6px;left:calc(50% + 8px);width:9px;height:9px;border-radius:50%;background:var(--orange)}
+
+/* Hoja inferior (formularios rápidos) */
+dialog.sheet{border:0;padding:0;margin:0;position:fixed;inset:auto 0 0 0;width:100%;max-width:100%;max-height:94vh;border-radius:22px 22px 0 0;background:var(--surface);color:var(--ink);overflow:auto;padding-bottom:var(--safe-b)}
+dialog.sheet::backdrop{background:rgba(8,14,24,.5)}
+.sheet-in{padding:10px 16px 18px;display:flex;flex-direction:column;gap:14px}
+.grab{width:42px;height:5px;border-radius:3px;background:var(--line);margin:4px auto 0}
+.sheet-h{display:flex;justify-content:space-between;align-items:center}
+.sheet-h h2{font-size:1.3rem;font-weight:800}
+.sheet-h button{border:0;background:var(--surface-2);border-radius:50%;width:38px;height:38px;font-size:1.2rem;cursor:pointer;color:var(--ink)}
+
+.toast{position:fixed;left:50%;top:calc(var(--safe-t) + 70px);transform:translateX(-50%) translateY(-10px);background:var(--ink);color:var(--bg);padding:11px 18px;border-radius:999px;font-weight:650;font-size:.92rem;z-index:60;opacity:0;transition:opacity .2s,transform .2s;pointer-events:none;max-width:90vw;text-align:center}
+.toast.show{opacity:1;transform:translateX(-50%)}
+
+/* Bienvenida */
+.welcome{min-height:100vh;display:flex;flex-direction:column;justify-content:center;gap:16px;padding:calc(var(--safe-t) + 30px) 22px calc(var(--safe-b) + 30px);max-width:460px;margin:0 auto}
+.welcome img{width:110px;height:110px;border-radius:24px;background:#fff;padding:6px;border:1px solid var(--line)}
+.welcome h1{font-size:2rem;font-weight:800}
+
+/* iPad y compu: menú lateral */
+@media (min-width:900px){
+  body{padding-left:230px}
+  nav.tabs{top:0;right:auto;width:230px;bottom:0;grid-template-columns:1fr;grid-auto-rows:min-content;border-top:0;border-right:1px solid var(--line);padding:calc(var(--safe-t) + 86px) 12px 12px;gap:4px}
+  nav.tabs button{flex-direction:row;justify-content:flex-start;gap:12px;font-size:1rem;padding:12px 14px;border-radius:12px}
+  nav.tabs button[aria-current="page"]{background:var(--accent-soft)}
+  nav.tabs .dot{position:static;margin-left:auto}
+  .top{position:fixed;left:0;top:0;width:230px;z-index:31}
+  .top button.icon{display:none}
+  main{padding:28px 32px 60px}
+  .total-bar{bottom:16px}
+  .tiles{grid-template-columns:repeat(4,1fr)}
+  dialog.sheet{inset:0;margin:auto;width:min(620px,92vw);max-height:88vh;border-radius:22px}
+  .toast{top:20px;left:calc(50% + 115px)}
+  .desk2{display:grid;grid-template-columns:1fr 1fr;gap:12px;align-items:start}
+}
+@media (prefers-reduced-motion:reduce){.toast{transition:none}}
+</style>
+</head>
+<body>
+<div id="welcome" class="welcome hidden">
+  <img src="logo.png" alt="Logo de 3DPRINTECH">
+  <h1>3DPRINTECH</h1>
+  <p class="muted">Conecta tu Google Sheet para que tus datos se guarden y se vean igual en el cel, el iPad y la compu.</p>
+  <label class="f">URL del Apps Script<input id="w-url" type="url" inputmode="url" placeholder="https://script.google.com/macros/s/…/exec" autocomplete="off"></label>
+  <label class="f">Clave<input id="w-key" type="password" autocomplete="off" placeholder="La que pusiste en el Apps Script"></label>
+  <button class="btn full" id="w-go">Conectar</button>
+  <button class="btn sec full" id="w-local">Usar sin conectar por ahora</button>
+  <p class="small muted" id="w-msg"></p>
+</div>
+
+<div id="shell" class="hidden">
+  <header class="top">
+    <img src="logo.png" alt="">
+    <div class="t"><b>3DPRINTECH</b><div class="sync" id="sync"><i></i><span>…</span></div></div>
+    <button class="icon" id="btn-sync" aria-label="Sincronizar ahora"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 1-15.5 6.3L3 16"/><path d="M3 12a9 9 0 0 1 15.5-6.3L21 8"/><path d="M21 3v5h-5M3 21v-5h5"/></svg></button>
+  </header>
+  <main id="view"></main>
+  <nav class="tabs" id="tabs" aria-label="Secciones"></nav>
+</div>
+<dialog class="sheet" id="sheet"><div class="grab"></div><div class="sheet-in" id="sheet-in"></div></dialog>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="jspdf.umd.min.js"></script>
+<script>
+(function(){
+"use strict";
+/* ================= Configuración ================= */
+const DEFAULT_CFG={
+  precioKg:300,merma:0.10,watts:120,kwh:4.64,impresora:12000,vida:5000,mant:1,
+  margen:1.0,gmin:20,min:100,dis:100,post:50,pMi:0.70,
+  dent:200,dentHoras:3,dentGramos:0,mayMin:10,mayPct:0.15,folioC:1,folioT:1,
+  secadoDias:14,stockBajo:200,fondoInicial:315,
+  negocio:"3DPRINTECH",tel:"3333929527",ig:"3dprintech__",pie:"Gracias por tu preferencia",
+  avisoOn:1,avisoRedes:"A veces grabo el proceso de impresión para mis redes sociales. Antes de publicar fotos o videos de tu pieza, te pido permiso.",
+  ultimoSecado:"",ultimoDentFid:"",t1:35,t2:30,lim:15,multi:10
+};
+const COLS=["ventas","dentista","gastos","docs","filamentos","movs","pagos"];
+const PRESETS=[["Negro","#1f1f1f"],["Blanco","#f4f4f2"],["Gris","#8a8f96"],["Plata","#c4c8cc"],["Rojo","#c62f2f"],["Naranja","#e8792b"],["Amarillo","#f2c230"],["Verde","#2e8b57"],["Azul","#2f5fb3"],["Morado","#7b4bb7"],["Rosa","#e48bb3"],["Café","#7a4e2d"],["Dorado","#c9a227"],["Transparente","#dfeef3"]];
+const MATERIALES=["PLA","PLA Silk","PLA Mate","PETG","TPU","ABS"];
+const CATS=["Material","Repuestos","Equipo","Envío","Empaque","Marketing","Otro"];
+const SALE_DE={rep:"Reposición",fondo:"Fondo",mio:"Mi dinero"};
+const defSaleDe=c=>(c==="Equipo"||c==="Repuestos")?"fondo":"rep";
+const MESES=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+
+/* ================= Estado local ================= */
+const LS={state:"3dp-state",out:"3dp-outbox",conn:"3dp-conn",pull:"3dp-lastpull",draft:"3dp-draft"};
+const load=(k,d)=>{try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}};
+const store=(k,v)=>{try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}};
+let state=load(LS.state,null)||{cfg:{...DEFAULT_CFG,_u:0}};
+COLS.forEach(c=>{if(!Array.isArray(state[c]))state[c]=[]});
+state.cfg={...DEFAULT_CFG,...state.cfg};
+let outbox=load(LS.out,{}),conn=load(LS.conn,null),lastPull=load(LS.pull,0);
+const C=()=>state.cfg;
+const live=c=>state[c].filter(x=>!x._x);
+
+/* ================= Utilidades ================= */
+const $=id=>document.getElementById(id);
+const MXN=new Intl.NumberFormat("es-MX",{style:"currency",currency:"MXN",maximumFractionDigits:2});
+const money=x=>MXN.format(Math.round((Number(x)||0)*100)/100);
+const money0=x=>"$"+Math.round(Number(x)||0).toLocaleString("es-MX");
+const n=v=>{const x=parseFloat(v);return isFinite(x)?x:0};
+const r2=x=>Math.round((Number(x)||0)*100)/100;
+const fmt=(x,d=0)=>(Math.round((Number(x)||0)*10**d)/10**d).toLocaleString("es-MX");
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const today=()=>{const d=new Date();d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,10)};
+const dshort=s=>{if(!s)return"";const[y,m,d]=s.split("-");return `${+d} ${MESES[+m-1]}`};
+const dlong=s=>{if(!s)return"";const[y,m,d]=s.split("-");return `${d}/${m}/${y}`};
+const daysBetween=(a,b)=>Math.round((Date.parse(b)-Date.parse(a))/864e5);
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const pct=k=>Math.round(n(C()[k])*1000)/10;
+let toastT;function toast(m){const t=$("toast");t.textContent=m;t.classList.add("show");clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove("show"),2300)}
+
+/* ================= Guardar y sincronizar ================= */
+function clean(o){const d={...o};delete d._u;delete d._x;return d}
+function save(col,item,msg){
+  item._u=Date.now();
+  const i=state[col].findIndex(x=>x.id===item.id);if(i>=0)state[col][i]=item;else state[col].push(item);
+  outbox[col+":"+item.id]={c:col,id:item.id,u:item._u,x:item._x?1:0,d:clean(item)};
+  commit(msg);
+}
+function remove(col,id,msg){const it=state[col].find(x=>x.id===id);if(!it)return;it._x=1;save(col,it,msg)}
+function saveCfg(msg){C()._u=Date.now();outbox["cfg:cfg"]={c:"cfg",id:"cfg",u:C()._u,x:0,d:clean(C())};commit(msg)}
+let syncT;
+function commit(msg){store(LS.state,state);store(LS.out,outbox);render();if(msg)toast(msg);clearTimeout(syncT);syncT=setTimeout(syncNow,1200)}
+function setSync(cls,text){const s=$("sync");s.className="sync "+cls;s.querySelector("span").textContent=text}
+async function api(action,payload){
+  if(!conn||!conn.url)throw new Error("sin-conexion");
+  if(payload){const r=await fetch(conn.url,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({...payload,action,key:conn.key})});return r.json()}
+  const q=new URLSearchParams({action,key:conn.key,since:String(lastPull||0)});const r=await fetch(conn.url+"?"+q);return r.json();
+}
+let syncing=false;
+async function syncNow(){
+  if(!conn||!conn.url){setSync("off","Solo en este dispositivo");return}
+  if(!navigator.onLine){setSync("off","Sin internet · se sube después");return}
+  if(syncing)return;syncing=true;setSync("busy","Sincronizando…");
+  try{
+    const ops=Object.values(outbox);
+    for(let i=0;i<ops.length;i+=150){
+      const part=ops.slice(i,i+150),res=await api("push",{ops:part});
+      if(!res.ok)throw new Error(res.error||"push");
+      part.forEach(o=>{const k=o.c+":"+o.id;if(outbox[k]&&outbox[k].u===o.u)delete outbox[k]});
+      store(LS.out,outbox);
+    }
+    const res=await api("pull");if(!res.ok)throw new Error(res.error||"pull");
+    let changed=false;
+    (res.records||[]).forEach(rec=>{
+      const k=rec.c+":"+rec.id;if(outbox[k])return;
+      if(rec.c==="cfg"){if(rec.u>(C()._u||0)){state.cfg={...DEFAULT_CFG,...rec.d,_u:rec.u};changed=true}return}
+      if(!state[rec.c])return;
+      const i=state[rec.c].findIndex(x=>x.id===rec.id),loc=i>=0?state[rec.c][i]:null;
+      if(!loc||rec.u>(loc._u||0)){const it={...rec.d,id:rec.id,_u:rec.u};if(rec.x)it._x=1;if(i>=0)state[rec.c][i]=it;else state[rec.c].push(it);changed=true}
+    });
+    lastPull=Math.max(lastPull||0,(res.time||Date.now())-60000);store(LS.pull,lastPull);
+    if(changed){store(LS.state,state);render(true)}
+    setSync("ok",Object.keys(outbox).length?"Faltan cambios por subir":"Sincronizado");
+  }catch(e){setSync("off",e.message==="clave"?"Clave incorrecta (Ajustes)":"No se pudo sincronizar")}
+  finally{syncing=false}
+}
+window.addEventListener("online",syncNow);
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")syncNow()});
+setInterval(()=>{if(document.visibilityState==="visible")syncNow()},90000);
+
+/* ================= Costo real y reparto ================= */
+const cgDefault=()=>n(C().precioKg)/1000;
+const fil=id=>state.filamentos.find(f=>f.id===id&&!f._x);
+const cgOf=fid=>{const f=fil(fid);return f&&n(f.pesoNuevo)>0?n(f.costo)/n(f.pesoNuevo):cgDefault()};
+const horaMaq=()=>(n(C().vida)>0?n(C().impresora)/n(C().vida):0)+n(C().mant);
+const luzHora=()=>n(C().watts)/1000*n(C().kwh);
+function costoPieza(it){
+  const c=C(),cant=Math.max(1,Math.round(n(it.cant)||1)),h=n(it.horas),g=n(it.gramos);
+  const material=g*cgOf(it.fid)*(1+n(c.merma)),luz=h*luzHora(),desgaste=h*horaMaq(),labor=n(it.postMin)/60*n(c.post)+n(it.dis)*n(c.dis)/cant;
+  return{material,luz,desgaste,labor,maquina:material+luz+desgaste,total:material+luz+desgaste+labor};
+}
+function precioSugerido(it){const k=costoPieza(it),c=C();return Math.ceil(Math.max(k.total*(1+n(c.margen)),k.total+n(it.horas)*n(c.gmin))-0.0001)}
+function precioAnterior(it){const c=C(),h=n(it.horas);return h*(h<n(c.lim)?n(c.t1):n(c.t2))}
+function repartir(monto,k){
+  const fixed=k.material+k.luz+k.desgaste,gan=monto-fixed-k.labor,p=Math.min(1,Math.max(0,n(C().pMi)));
+  let mi,fondo;if(gan>=0){mi=k.labor+gan*p;fondo=gan*(1-p)}else if(monto-fixed>=0){mi=monto-fixed;fondo=0}else{mi=0;fondo=monto-fixed}
+  return{material:r2(k.material),luz:r2(k.luz),desgaste:r2(k.desgaste),fondo:r2(fondo),mi:r2(mi),gan:r2(gan)};
+}
+function costoVenta(v){
+  const m=1+n(C().merma),us=(v.usos||[]).filter(u=>u.fid&&n(u.g)>0);
+  const material=us.length?us.reduce((t,u)=>t+n(u.g)*cgOf(u.fid),0)*m:n(v.gramos)*cgDefault()*m;
+  return{material,luz:n(v.horas)*luzHora(),desgaste:n(v.horas)*horaMaq(),labor:n(v.labor)};
+}
+const costoTotal=v=>{const k=costoVenta(v);return k.material+k.luz+k.desgaste};
+function repDent(pago,fid){const cp=costoPieza({horas:C().dentHoras,gramos:C().dentGramos,fid,cant:1}),k=n(pago)/(n(C().dent)||1);return repartir(n(pago),{material:cp.material*k,luz:cp.luz*k,desgaste:cp.desgaste*k,labor:0})}
+
+/* ================= Inventario ================= */
+function usado(fid){let g=0;live("ventas").forEach(v=>(v.usos||[]).forEach(u=>{if(u.fid===fid)g+=n(u.g)}));live("dentista").forEach(v=>(v.usos||[]).forEach(u=>{if(u.fid===fid)g+=n(u.g)}));live("movs").forEach(m=>{if(m.fid===fid)g+=n(m.g)});return g}
+const resta=f=>r2(n(f.gramosIni)-usado(f.id));
+const rollos=()=>live("filamentos").filter(f=>!f.archivado).sort((a,b)=>a.color.localeCompare(b.color));
+const sw=hex=>`<span class="sw" style="background:${esc(hex||"#ccc")}"></span>`;
+function secado(){const l=C().ultimoSecado,d=l?daysBetween(l,today()):null;return{l,d,vence:d===null||d>=n(C().secadoDias)}}
+
+/* ================= Quincenas, luz y apartados ================= */
+const qKey=iso=>{const[y,m,d]=iso.split("-");return `${y}-${m}-${+d<=15?1:2}`};
+function qInfo(k){const[y,m,h]=k.split("-").map(Number),last=new Date(y,m,0).getDate();return{label:h===1?`1–15 ${MESES[m-1]}`:`16–${last} ${MESES[m-1]}`,fin:`${y}-${String(m).padStart(2,"0")}-${h===1?"15":String(last)}`}}
+function miEventos(){
+  const ev=[];
+  live("ventas").forEach(v=>{if(v.pagado&&v.rep)ev.push({fecha:v.fechaPago||v.fecha,mi:n(v.rep.mi)})});
+  live("dentista").forEach(v=>{if(n(v.pago)&&v.rep)ev.push({fecha:v.fecha,mi:n(v.rep.mi)})});
+  return ev;
+}
+function quincenas(){
+  const by={};miEventos().forEach(e=>{const k=qKey(e.fecha);by[k]=(by[k]||0)+e.mi});
+  const paid={};live("pagos").filter(p=>p.tipo==="quincena").forEach(p=>{paid[p.periodo]=(paid[p.periodo]||0)+n(p.monto)});
+  const cur=qKey(today());
+  const all=[...new Set([...Object.keys(by),...Object.keys(paid),cur])].sort();
+  return all.map(k=>({k,...qInfo(k),total:by[k]||0,pagado:paid[k]||0,pend:(by[k]||0)-(paid[k]||0),actual:k===cur,cerrada:k<cur}));
+}
+function luzEventos(){
+  const ev=[];live("ventas").forEach(v=>{if(n(v.horas))ev.push({fecha:v.fecha,h:n(v.horas)})});
+  live("dentista").forEach(v=>{if(n(v.horas))ev.push({fecha:v.fecha,h:n(v.horas)})});
+  live("movs").forEach(m=>{if(n(m.horas))ev.push({fecha:m.fecha,h:n(m.horas)})});return ev;
+}
+function luz(){
+  const ev=luzEventos(),h=ev.reduce((t,e)=>t+e.h,0),gen=h*luzHora();
+  const pagos=live("pagos").filter(p=>p.tipo==="luz").sort((a,b)=>a.fecha.localeCompare(b.fecha)),pag=pagos.reduce((t,p)=>t+n(p.monto),0);
+  const ult=pagos.length?pagos[pagos.length-1].fecha:"",hDesde=ev.filter(e=>!ult||e.fecha>ult).reduce((t,e)=>t+e.h,0);
+  return{gen,pag,pend:gen-pag,ult,hDesde,pagos};
+}
+function apartados(){
+  const t={material:0,desgaste:0,fondo:0,mi:0};
+  const add=r=>{if(!r)return;t.material+=n(r.material);t.desgaste+=n(r.desgaste);t.fondo+=n(r.fondo);t.mi+=n(r.mi)};
+  live("ventas").forEach(v=>{if(v.pagado)add(v.rep)});live("dentista").forEach(v=>{if(n(v.pago))add(v.rep)});
+  const g={rep:0,fondo:0,mio:0};live("gastos").forEach(x=>{g[x.saleDe||defSaleDe(x.categoria)]+=n(x.monto)});
+  const qPag=live("pagos").filter(p=>p.tipo==="quincena").reduce((s,p)=>s+n(p.monto),0),L=luz();
+  const o={reposicion:t.material-g.rep,fondo:n(C().fondoInicial)+t.desgaste+t.fondo-g.fondo,luz:L.pend,mi:t.mi-qPag};
+  o.total=o.reposicion+o.fondo+o.luz+o.mi;return o;
+}
+
+/* ================= Navegación ================= */
+const ICON={
+  inicio:'<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/>',
+  cotizar:'<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h2M12 11h2M16 11h0M8 15h2M12 15h2M16 15v3"/>',
+  rollos:'<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="3"/><path d="M12 3.5v5M12 15.5v5"/>',
+  pagos:'<rect x="3" y="6" width="18" height="12" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6 9v.01M18 15v.01"/>',
+  mas:'<circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/>'
+};
+const TABS=[["inicio","Inicio"],["cotizar","Cotizar"],["rollos","Rollos"],["pagos","Pagos"],["mas","Más"]];
+const SUB={ventas:"mas",dentista:"mas",cotizaciones:"mas",paleta:"mas",gastos:"mas",ajustes:"mas"};
+let page="inicio";
+function go(p){location.hash=p}
+window.addEventListener("hashchange",()=>{page=(location.hash||"#inicio").slice(1);if(!PAGES[page])page="inicio";render();window.scrollTo(0,0)});
+function tabDots(){
+  const q=quincenas().filter(x=>x.cerrada&&x.pend>0.5).length,s=secado().vence||rollos().some(f=>resta(f)<n(C().stockBajo));
+  return{pagos:q>0,rollos:s};
+}
+function renderTabs(){
+  const cur=SUB[page]||page,d=tabDots();
+  $("tabs").innerHTML=TABS.map(([k,l])=>`<button data-go="${k}"${k===cur?' aria-current="page"':""}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">${ICON[k]}</svg>${l}${d[k]?'<i class="dot"></i>':""}</button>`).join("");
+}
+$("tabs").addEventListener("click",e=>{const b=e.target.closest("[data-go]");if(b)go(b.dataset.go)});
+const PAGES={};
+let renderLater=false;
+function render(soft){if($("shell").classList.contains("hidden"))return;
+  const a=document.activeElement;if(soft&&a&&$("view").contains(a)&&/INPUT|TEXTAREA|SELECT/.test(a.tagName)){renderLater=true;return}renderLater=false;renderTabs();const P=PAGES[page];$("view").innerHTML=P.html();if(P.after)P.after()}
+document.addEventListener("focusout",()=>setTimeout(()=>{if(renderLater&&!$("view").contains(document.activeElement))render()},50));
+document.addEventListener("click",e=>{const g=e.target.closest("[data-goto]");if(g){e.preventDefault();go(g.dataset.goto);return}const a=e.target.closest("[data-act]");if(a)ACT[a.dataset.act]&&ACT[a.dataset.act](a,e)});
+const ACT={};
+
+/* ================= Hoja inferior ================= */
+const sheet=$("sheet");
+function openSheet(title,body,after){$("sheet-in").innerHTML=`<div class="sheet-h"><h2>${title}</h2><button type="button" data-act="close-sheet" aria-label="Cerrar">✕</button></div>${body}`;if(!sheet.open)sheet.showModal();if(after)after()}
+function closeSheet(){if(sheet.open)sheet.close()}
+ACT["close-sheet"]=closeSheet;
+sheet.addEventListener("click",e=>{if(e.target===sheet)closeSheet()});
+
+/* piezas comunes */
+function bars(r){
+  const P=[["c-mat","Material",r.material],["c-luz","Luz",r.luz],["c-des","Desgaste",r.desgaste],["c-fon","Fondo",r.fondo],["c-mi","Para ti",r.mi]],t=P.reduce((s,x)=>s+Math.max(0,n(x[2])),0)||1;
+  return `<div class="bar">${P.map(x=>`<i class="${x[0]}" style="width:${Math.max(0,n(x[2]))/t*100}%"></i>`).join("")}</div><div class="legend">${P.map(x=>`<div><i class="${x[0]}"></i>${x[1]}<b>${money0(x[2])}</b></div>`).join("")}</div>`;
+}
+function rolloChips(selected,act,extra){
+  const L=rollos();
+  if(!L.length)return `<p class="small muted">No tienes rollos. <button type="button" class="linkbtn" data-act="nuevo-rollo">Agregar uno</button></p>`;
+  return `<div class="chips">${L.map(f=>`<button type="button" class="chip" data-act="${act}" data-fid="${esc(f.id)}"${extra||""} aria-pressed="${selected.includes(f.id)}">${sw(f.hex)}${esc(f.color)} <small>${fmt(resta(f))} g</small></button>`).join("")}</div>`;
+}
+
+/* ================= INICIO ================= */
+PAGES.inicio={html(){
+  const s=secado(),q=quincenas(),pend=q.filter(x=>x.cerrada&&x.pend>0.5),cur=q.find(x=>x.actual),L=luz();
+  const low=rollos().filter(f=>resta(f)<n(C().stockBajo));
+  const dsal=live("dentista").reduce((t,v)=>t+n(v.pago)-n(v.piezas)*n(C().dent),0);
+  const al=[];
+  if(pend.length)al.push(`<div class="alert good"><div><b>Pásate ${money0(pend.reduce((t,x)=>t+x.pend,0))} a tu cuenta</b><p>${pend.map(x=>x.label).join(", ")}</p></div><button class="btn sm ok" data-goto="pagos">Ver</button></div>`);
+  if(s.vence)al.push(`<div class="alert"><div><b>Toca secar el filamento</b><p>${s.l?`Hace ${s.d} días`:"Aún no registras un secado"}</p></div><button class="btn sm" data-act="secado">Ya lo sequé</button></div>`);
+  if(low.length)al.push(`<div class="alert"><div><b>Rollos por acabarse</b><p>${low.map(f=>`${esc(f.color)} (${fmt(resta(f))} g)`).join(", ")}</p></div></div>`);
+  if(dsal<0)al.push(`<div class="alert info"><div><b>El dentista te debe ${money0(-dsal)}</b><p>Cóbralo en la siguiente visita</p></div></div>`);
+  const rec=[...live("ventas").map(v=>({f:v.fecha,t:v.cliente||"Venta",d:v.producto,m:n(v.precio),u:v._u})),...live("dentista").map(v=>({f:v.fecha,t:"Dentista",d:`${n(v.piezas)} pieza(s)`,m:n(v.pago),u:v._u}))].sort((a,b)=>(b.f+b.u).localeCompare(a.f+a.u)).slice(0,4);
+  return `<div class="stack">
+    <div class="tiles">
+      <button class="tile t-venta" data-act="vendi">${svg('<path d="M20 6L9 17l-5-5"/>')}<div>Vendí<br><span>Registrar un cobro</span></div></button>
+      <button class="tile t-dent" data-act="dentista">${svg('<path d="M7 3c-2.5 0-4 2-4 4.5 0 3 1.5 5 2 8 .4 2.6 1 5.5 2.5 5.5S9.5 17 12 17s2.9 4 4.5 4 2.1-2.9 2.5-5.5c.5-3 2-5 2-8C21 5 19.5 3 17 3c-2 0-3 1-5 1S9 3 7 3z"/>')}<div>Fui al dentista<br><span>Piezas y pago</span></div></button>
+      <button class="tile t-rollo" data-act="nuevo-rollo">${svg(ICON.rollos)}<div>Agregar rollo<br><span>Filamento nuevo</span></div></button>
+      <button class="tile t-cot" data-act="nueva-cot">${svg(ICON.cotizar)}<div>Cotizar<br><span>Precio y PDF</span></div></button>
+    </div>
+    ${al.join("")}
+    <div class="desk2">
+    <div class="card"><div class="lbl">Esta quincena (${cur.label}) llevas para ti</div><div class="big">${money0(cur.total)}</div><div class="small muted" style="margin-top:4px">Luz acumulada para tu papá: ${money0(L.pend)}</div></div>
+    <div class="card"><h2>Lo último</h2>${rec.length?`<div class="list">${rec.map(r=>`<div class="item" style="cursor:default"><div class="txt"><b>${esc(r.t)}</b><span>${dshort(r.f)} · ${esc(r.d)}</span></div><div class="amt">${money0(r.m)}</div></div>`).join("")}</div>`:`<div class="empty">Aquí verás tus ventas y visitas.</div>`}</div>
+    </div></div>`;
+}};
+function svg(p){return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`}
+ACT.secado=()=>{C().ultimoSecado=today();saveCfg("Listo, te aviso en "+n(C().secadoDias)+" días")};
+
+/* ================= VENDÍ ================= */
+let vf=null;
+function newVf(p){return{id:null,fecha:today(),cliente:"",producto:"",precio:"",horas:"",pagado:true,multi:false,usos:[],labor:0,docId:"",...(p||{})}}
+ACT.vendi=()=>{vf=newVf();openVendi()};
+function openVendi(){
+  const cots=live("docs").filter(d=>d.tipo==="cot"&&!d.vendida).sort((a,b)=>(b.fecha+b.folio).localeCompare(a.fecha+a.folio)).slice(0,6);
+  openSheet(vf.id?"Editar venta":"Vendí",`
+    ${!vf.id&&cots.length?`<div><div class="lbl" style="margin-bottom:6px">¿Es de una cotización?</div><div class="chips">${cots.map(d=>`<button type="button" class="chip plain" data-act="vf-cot" data-id="${esc(d.id)}">${esc(d.cliente)} · ${money0(d.total)}</button>`).join("")}</div></div>`:""}
+    <label class="f">¿Cuánto cobraste?<input id="vf-precio" class="money" type="number" inputmode="decimal" placeholder="$0" value="${esc(vf.precio)}"></label>
+    <div class="grid2"><label class="f">Cliente<input id="vf-cliente" list="clientes" value="${esc(vf.cliente)}" placeholder="Nombre"></label><label class="f">Horas de impresión<input id="vf-horas" type="number" inputmode="decimal" value="${esc(vf.horas)}" placeholder="0"></label></div>
+    <datalist id="clientes">${[...new Set(live("ventas").map(v=>v.cliente).filter(Boolean))].map(c=>`<option value="${esc(c)}">`).join("")}</datalist>
+    <label class="f">¿Qué fue?<input id="vf-producto" value="${esc(vf.producto)}" placeholder="Ej. Maqueta, 2 llaveros…"></label>
+    <div><div class="spread" style="margin-bottom:6px"><span class="lbl">Rollo usado</span><div class="seg" style="width:190px"><button type="button" data-act="vf-multi" data-v="0" aria-pressed="${!vf.multi}">1 color</button><button type="button" data-act="vf-multi" data-v="1" aria-pressed="${vf.multi}">Varios</button></div></div>
+      ${rolloChips(vf.usos.map(u=>u.fid),"vf-rollo")}
+      <div id="vf-usos" class="stack" style="gap:8px;margin-top:6px">${vf.usos.map((u,i)=>{const f=fil(u.fid);return `<div class="row" style="flex-wrap:nowrap">${sw(f?f.hex:"#ccc")}<span style="flex:1">${esc(f?f.color:"Rollo")}</span><input data-ug="${i}" type="number" inputmode="decimal" placeholder="gramos" value="${esc(u.g)}" style="width:120px"></div>`}).join("")}</div></div>
+    <div class="seg"><button type="button" data-act="vf-pag" data-v="1" aria-pressed="${!!vf.pagado}">Ya me pagó</button><button type="button" data-act="vf-pag" data-v="0" aria-pressed="${!vf.pagado}">Me debe</button></div>
+    <div class="card" style="padding:12px"><div class="spread"><span class="lbl">Para ti</span><b class="mid" id="vf-mi">$0</b></div><div id="vf-bars" style="margin-top:8px"></div></div>
+    <button class="btn ok full" data-act="vf-save">${vf.id?"Guardar cambios":"Guardar venta"}</button>
+    ${vf.id?`<button class="btn danger full" data-act="vf-del">Borrar venta</button>`:""}`,()=>{
+    const bind=(id,k)=>$(id).addEventListener("input",e=>{vf[k]=e.target.value;vfPreview()});
+    bind("vf-precio","precio");bind("vf-cliente","cliente");bind("vf-horas","horas");bind("vf-producto","producto");
+    $("vf-usos").addEventListener("input",e=>{const i=e.target.dataset.ug;if(i!=null){vf.usos[+i].g=e.target.value;vfPreview()}});
+    vfPreview();if(!vf.id)setTimeout(()=>$("vf-precio").focus(),250);
+  });
+}
+function vfObj(){const usos=vf.usos.filter(u=>u.fid&&n(u.g)>0).map(u=>({fid:u.fid,g:n(u.g)}));return{...vf,precio:n(vf.precio),horas:n(vf.horas),usos,gramos:usos.reduce((t,u)=>t+u.g,0)}}
+function vfPreview(){const v=vfObj(),r=repartir(v.precio,costoVenta(v));$("vf-mi").textContent=vf.pagado?money0(r.mi):"—";$("vf-bars").innerHTML=vf.pagado?bars(r):`<p class="small muted">Se reparte cuando te pague.</p>`}
+ACT["vf-rollo"]=b=>{const fid=b.dataset.fid,i=vf.usos.findIndex(u=>u.fid===fid);
+  if(vf.multi){if(i>=0)vf.usos.splice(i,1);else vf.usos.push({fid,g:""})}else vf.usos=i>=0?[]:[{fid,g:vf.usos[0]?vf.usos[0].g:""}];openVendi()};
+ACT["vf-multi"]=b=>{vf.multi=b.dataset.v==="1";if(!vf.multi&&vf.usos.length>1)vf.usos=[{fid:vf.usos[0].fid,g:vf.usos.reduce((t,u)=>t+n(u.g),0)}];openVendi()};
+ACT["vf-pag"]=b=>{vf.pagado=b.dataset.v==="1";document.querySelectorAll('[data-act="vf-pag"]').forEach(x=>x.setAttribute("aria-pressed",String(x===b)));vfPreview()};
+ACT["vf-cot"]=b=>{const d=state.docs.find(x=>x.id===b.dataset.id);vf=newVf(ventaDesdeDoc(d));openVendi()};
+ACT["vf-save"]=()=>{
+  const v=vfObj();if(!v.precio){toast("Escribe cuánto cobraste");return}
+  const old=v.id?state.ventas.find(x=>x.id===v.id):null;
+  const it={id:v.id||uid(),fecha:v.fecha||today(),cliente:v.cliente.trim(),producto:v.producto.trim(),precio:v.precio,horas:v.horas,gramos:v.gramos,usos:v.usos,multi:v.multi,labor:n(v.labor),pagado:!!v.pagado,docId:v.docId||"",fechaPago:v.pagado?(old&&old.pagado&&old.fechaPago?old.fechaPago:today()):""};
+  it.rep=it.pagado?repartir(it.precio,costoVenta(it)):null;it.paraTi=it.rep?it.rep.mi:0;
+  closeSheet();save("ventas",it,old?"Venta actualizada":"¡Venta guardada!");
+  if(it.docId){const d=state.docs.find(x=>x.id===it.docId);if(d&&!d.vendida){d.vendida=1;save("docs",d)}}
+};
+ACT["vf-del"]=()=>{if(confirm("¿Borrar esta venta? Su filamento regresa al rollo.")){closeSheet();remove("ventas",vf.id,"Venta borrada")}};
+function ventaDesdeDoc(d){
+  const t=docTot(d),by={};d.items.forEach(i=>{if(i.fid)by[i.fid]=(by[i.fid]||0)+n(i.gramos)*n(i.cant)});
+  const usos=Object.entries(by).map(([fid,g])=>({fid,g:r2(g)}));
+  return{cliente:d.cliente,producto:d.items.map(i=>`${i.desc} ×${i.cant}`).join(", "),precio:r2(t.total),horas:r2(d.items.reduce((s,i)=>s+n(i.horas)*n(i.cant),0)),usos,multi:usos.length>1,labor:r2(d.items.reduce((s,i)=>s+costoPieza(i).labor*n(i.cant),0)),docId:d.id};
+}
+
+/* ================= DENTISTA ================= */
+let df=null;
+function dentSaldo(){return live("dentista").reduce((t,v)=>t+n(v.pago)-n(v.piezas)*n(C().dent),0)}
+ACT.dentista=()=>{df={piezas:1,pago:"",fid:C().ultimoDentFid&&fil(C().ultimoDentFid)?C().ultimoDentFid:((rollos()[0]||{}).id||""),g:C().dentGramos||""};openDent()};
+function openDent(){
+  const s=dentSaldo();
+  openSheet("Fui al dentista",`
+    <div class="alert ${s<0?"bad":s>0?"good":"info"}"><div><b>${s<0?`Te debe ${money0(-s)}`:s>0?`Tiene ${money0(s)} a favor`:"Están a mano"}</b><p>Cada pieza vale ${money0(C().dent)}</p></div></div>
+    <div><div class="lbl" style="text-align:center;margin-bottom:6px">Piezas que llevaste</div><div class="stepper"><button type="button" data-act="df-step" data-v="-1" aria-label="Menos">−</button><output id="df-pz">${df.piezas}</output><button type="button" data-act="df-step" data-v="1" aria-label="Más">+</button></div></div>
+    <label class="f">¿Cuánto te pagó?<input id="df-pago" class="money" type="number" inputmode="decimal" placeholder="$0" value="${esc(df.pago)}"></label>
+    <div class="chips wrap">${[0,200,400,600,800,1000].map(v=>`<button type="button" class="chip plain" data-act="df-quick" data-v="${v}">${v?money0(v):"No me pagó"}</button>`).join("")}</div>
+    <div><div class="lbl" style="margin-bottom:6px">Rollo</div>${rolloChips([df.fid],"df-rollo")}
+    <label class="f" style="margin-top:6px">Gramos por pieza<input id="df-g" type="number" inputmode="decimal" value="${esc(df.g)}" placeholder="Ve Bambu Studio"></label></div>
+    <p class="small muted" id="df-new"></p>
+    <button class="btn full" data-act="df-save">Guardar visita</button>`,()=>{
+    $("df-pago").addEventListener("input",e=>{df.pago=e.target.value;dfPrev()});$("df-g").addEventListener("input",e=>{df.g=e.target.value});dfPrev()});
+}
+function dfPrev(){const ns=dentSaldo()+n(df.pago)-df.piezas*n(C().dent);$("df-new").textContent=`Después de esta visita: ${ns<0?`te debe ${money0(-ns)}`:ns>0?`queda ${money0(ns)} a favor`:"quedan a mano"}.`}
+ACT["df-step"]=b=>{df.piezas=Math.max(0,df.piezas+ +b.dataset.v);$("df-pz").textContent=df.piezas;dfPrev()};
+ACT["df-quick"]=b=>{df.pago=b.dataset.v;$("df-pago").value=b.dataset.v==="0"?"":b.dataset.v;dfPrev()};
+ACT["df-rollo"]=b=>{df.fid=df.fid===b.dataset.fid?"":b.dataset.fid;document.querySelectorAll('[data-act="df-rollo"]').forEach(x=>x.setAttribute("aria-pressed",String(x.dataset.fid===df.fid)))};
+ACT["df-save"]=()=>{
+  const pz=df.piezas,pago=n(df.pago),g=n(df.g);if(!pz&&!pago){toast("Pon piezas o pago");return}
+  const v={id:uid(),fecha:today(),piezas:pz,pago,horas:pz*n(C().dentHoras),usos:df.fid&&pz&&g?[{fid:df.fid,g:pz*g}]:[]};v.rep=pago?repDent(pago,df.fid):null;
+  if(g&&g!==n(C().dentGramos)||df.fid!==C().ultimoDentFid){C().dentGramos=g||C().dentGramos;C().ultimoDentFid=df.fid;saveCfg()}
+  closeSheet();save("dentista",v,"Visita guardada");
+};
+
+/* ================= ROLLOS ================= */
+PAGES.rollos={html(){
+  const s=secado(),L=rollos(),arch=live("filamentos").filter(f=>f.archivado);
+  return `<div class="page-h"><div><h1>Rollos</h1><p>${L.length} rollo(s) · ${fmt(L.reduce((t,f)=>t+Math.max(0,resta(f)),0)/1000,2)} kg</p></div></div>
+  <div class="stack">
+  <div class="alert ${s.vence?"":"good"}"><div><b>${s.vence?"Toca secar el filamento":"Filamento seco"}</b><p>${s.l?`Último secado: ${dshort(s.l)} (hace ${s.d} días)`:"Sin registro de secado"}</p></div><button class="btn sm${s.vence?"":" sec"}" data-act="secado">Ya lo sequé</button></div>
+  <div class="spools">${L.map(f=>{const r=resta(f),p=Math.max(0,Math.min(100,r/(n(f.pesoNuevo)||1000)*100)),low=r<n(C().stockBajo);
+    return `<button class="spool${low?" low":""}" data-act="rollo" data-fid="${esc(f.id)}">${sw(f.hex)}<b>${esc(f.color)}</b><span class="small muted">${esc(f.material)}</span><span class="g">${fmt(Math.max(0,r))} g</span><span class="meter"><span style="width:${p}%"></span></span></button>`}).join("")}
+    <button class="spool add" data-act="nuevo-rollo">+ Agregar rollo</button></div>
+  ${arch.length?`<details class="more"><summary>Rollos archivados (${arch.length})</summary><div class="list" style="margin-top:6px">${arch.map(f=>`<button class="item" data-act="rollo" data-fid="${esc(f.id)}">${sw(f.hex)}<div class="txt"><b>${esc(f.color)} · ${esc(f.material)}</b><span>${fmt(resta(f))} g</span></div></button>`).join("")}</div></details>`:""}
+  <button class="btn sec" data-act="falla">Registrar falla o prueba</button>
+  </div>`;
+}};
+let rf=null;
+ACT["nuevo-rollo"]=()=>{rf={id:null,color:"",hex:"#1f1f1f",material:"PLA",gramosIni:1000,pesoNuevo:1000,costo:n(C().precioKg)};openRolloForm()};
+function openRolloForm(){
+  openSheet(rf.id?"Editar rollo":"Agregar rollo",`
+    <div class="colors">${PRESETS.map(([nm,hx])=>`<button type="button" data-act="rf-color" data-n="${esc(nm)}" data-h="${hx}" style="background:${hx}" aria-label="${esc(nm)}" aria-pressed="${rf.color===nm}"></button>`).join("")}</div>
+    <div class="grid2"><label class="f">Color<input id="rf-color" value="${esc(rf.color)}" placeholder="Toca un color"></label><label class="f">Tono exacto<input id="rf-hex" type="color" value="${esc(rf.hex)}" style="padding:4px"></label></div>
+    <div><div class="lbl" style="margin-bottom:6px">Material</div><div class="chips wrap">${MATERIALES.map(m=>`<button type="button" class="chip plain" data-act="rf-mat" data-v="${m}" aria-pressed="${rf.material===m}">${m}</button>`).join("")}</div></div>
+    <div class="grid2"><label class="f">Gramos que tiene<input id="rf-g" type="number" inputmode="decimal" value="${esc(rf.gramosIni)}"></label><label class="f">Costo del rollo<input id="rf-costo" type="number" inputmode="decimal" value="${esc(rf.costo)}"></label></div>
+    <p class="small muted">Si ya está empezado, pésalo sin el carrete (unos 250 g) y pon lo que le queda.</p>
+    <button class="btn orange full" data-act="rf-save">${rf.id?"Guardar cambios":"Agregar rollo"}</button>`,()=>{
+    $("rf-color").addEventListener("input",e=>rf.color=e.target.value);$("rf-hex").addEventListener("input",e=>rf.hex=e.target.value);
+    $("rf-g").addEventListener("input",e=>rf.gramosIni=e.target.value);$("rf-costo").addEventListener("input",e=>rf.costo=e.target.value)});
+}
+ACT["rf-color"]=b=>{rf.color=b.dataset.n;rf.hex=b.dataset.h;$("rf-color").value=rf.color;$("rf-hex").value=rf.hex;document.querySelectorAll('[data-act="rf-color"]').forEach(x=>x.setAttribute("aria-pressed",String(x===b)))};
+ACT["rf-mat"]=b=>{rf.material=b.dataset.v;document.querySelectorAll('[data-act="rf-mat"]').forEach(x=>x.setAttribute("aria-pressed",String(x===b)))};
+ACT["rf-save"]=()=>{if(!String(rf.color).trim()){toast("Elige o escribe el color");return}
+  const old=rf.id?state.filamentos.find(f=>f.id===rf.id):null;
+  const it={...(old||{}),id:rf.id||("R"+uid().slice(-6).toUpperCase()),color:String(rf.color).trim(),hex:rf.hex,material:rf.material,gramosIni:n(rf.gramosIni),pesoNuevo:n(rf.pesoNuevo)||1000,costo:n(rf.costo),fecha:old?old.fecha:today(),archivado:old?!!old.archivado:false};
+  closeSheet();save("filamentos",it,old?"Rollo actualizado":"Rollo agregado")};
+ACT.rollo=b=>{const f=state.filamentos.find(x=>x.id===b.dataset.fid);if(!f)return;const r=resta(f);
+  openSheet(`${esc(f.color)} · ${esc(f.material)}`,`
+    <div class="row" style="justify-content:center;gap:16px">${sw(f.hex).replace('class="sw"','class="sw" style="width:72px;height:72px;background:'+esc(f.hex)+'"')}<div><div class="big">${fmt(Math.max(0,r))} g</div><div class="small muted">${money(cgOf(f.id)*1000)}/kg</div></div></div>
+    <label class="f">Lo pesé y tiene (g)<input id="rl-peso" type="number" inputmode="decimal" placeholder="${fmt(Math.max(0,r))}"></label>
+    <button class="btn full" data-act="rl-peso" data-fid="${esc(f.id)}">Corregir gramos</button>
+    <div class="grid2"><button class="btn sec" data-act="rl-edit" data-fid="${esc(f.id)}">Editar</button><button class="btn sec" data-act="rl-arch" data-fid="${esc(f.id)}">${f.archivado?"Regresar":"Archivar"}</button></div>`)};
+ACT["rl-peso"]=b=>{const f=fil(b.dataset.fid),real=$("rl-peso").value;if(real===""){toast("Escribe cuánto pesó");return}const diff=r2(resta(f)-n(real));closeSheet();if(diff)save("movs",{id:uid(),fecha:today(),fid:f.id,g:diff,horas:0,motivo:"Ajuste por pesado"},"Gramos corregidos")};
+ACT["rl-edit"]=b=>{const f=fil(b.dataset.fid);rf={...f};openRolloForm()};
+ACT["rl-arch"]=b=>{const f=state.filamentos.find(x=>x.id===b.dataset.fid);f.archivado=!f.archivado;closeSheet();save("filamentos",f,f.archivado?"Rollo archivado":"Rollo regresado")};
+let mf=null;
+ACT.falla=()=>{mf={fid:(rollos()[0]||{}).id||"",g:"",horas:"",motivo:"Impresión fallida"};
+  openSheet("Falla o prueba",`<div><div class="lbl" style="margin-bottom:6px">¿De qué rollo?</div>${rolloChips([mf.fid],"mf-rollo")}</div>
+    <div class="grid2"><label class="f">Gramos perdidos<input id="mf-g" type="number" inputmode="decimal"></label><label class="f">Horas de impresora<input id="mf-h" type="number" inputmode="decimal"></label></div>
+    <div class="seg">${["Impresión fallida","Prueba","Regalo"].map(m=>`<button type="button" data-act="mf-mot" data-v="${m}" aria-pressed="${mf.motivo===m}">${m}</button>`).join("")}</div>
+    <p class="small muted">Las horas también suman a la luz de tu papá.</p><button class="btn full" data-act="mf-save">Guardar</button>`)};
+ACT["mf-rollo"]=b=>{mf.fid=b.dataset.fid;document.querySelectorAll('[data-act="mf-rollo"]').forEach(x=>x.setAttribute("aria-pressed",String(x===b)))};
+ACT["mf-mot"]=b=>{mf.motivo=b.dataset.v;document.querySelectorAll('[data-act="mf-mot"]').forEach(x=>x.setAttribute("aria-pressed",String(x===b)))};
+ACT["mf-save"]=()=>{const g=n($("mf-g").value),h=n($("mf-h").value);if(!g&&!h){toast("Pon gramos u horas");return}closeSheet();save("movs",{id:uid(),fecha:today(),fid:mf.fid,g,horas:h,motivo:mf.motivo},"Registrado")};
+
+/* ================= COTIZAR ================= */
+function blankCot(){return{editId:null,cliente:"",pct:null,entrega:"",vigencia:15,notas:"",aviso:!!n(C().avisoOn),items:[blankItem()]}}
+function blankItem(){return{desc:"",cant:1,horas:"",gramos:"",fid:"",postMin:"",dis:"",normal:0,manual:false}}
+let cot=load(LS.draft,null)||blankCot();
+const saveDraft=()=>store(LS.draft,cot);
+function itemPrice(it){if(!it.manual)it.normal=precioSugerido(it);return n(it.normal)}
+function docTot(d){const normal=d.items.reduce((t,i)=>t+n(i.cant)*n(i.normal),0),pz=d.items.reduce((t,i)=>t+n(i.cant),0);return{normal,pz,desc:normal*n(d.pct),total:normal*(1-n(d.pct))}}
+function cotPct(){if(cot.pct!=null)return cot.pct;const pz=cot.items.reduce((t,i)=>t+n(i.cant),0);return pz>=n(C().mayMin)?n(C().mayPct):0}
+ACT["nueva-cot"]=()=>{if(cot.editId||cot.items.some(i=>n(i.horas)||n(i.gramos))){if(!confirm("¿Empezar una cotización nueva? Se borra la que tienes en pantalla."))return go("cotizar")}cot=blankCot();saveDraft();go("cotizar");render()};
+PAGES.cotizar={html(){
+  return `<div class="page-h"><div><h1>${cot.editId?"Editar "+esc((state.docs.find(d=>d.id===cot.editId)||{}).folio||""):"Cotizar"}</h1><p>Precio con tu costo real</p></div>${cot.editId||cot.items.length>1||cot.cliente?`<button class="btn sm sec" data-act="nueva-cot">Nueva</button>`:""}</div>
+  <div class="stack">
+    <label class="f">Cliente (opcional)<input id="c-cliente" value="${esc(cot.cliente)}" placeholder="Nombre"></label>
+    <div id="c-items" class="stack">${cot.items.map((it,i)=>itemHTML(it,i)).join("")}</div>
+    <button class="btn sec" data-act="c-add">+ Otro producto</button>
+    <details class="more"><summary>Descuento, entrega y notas</summary><div class="stack" style="margin-top:10px">
+      <div class="grid2"><label class="f">Descuento (%)<input id="c-pct" type="number" inputmode="decimal" value="${Math.round(cotPct()*1000)/10}"></label><label class="f">Vigencia (días)<input id="c-vig" type="number" inputmode="numeric" value="${esc(cot.vigencia)}"></label></div>
+      <label class="f">Tiempo de entrega<input id="c-ent" value="${esc(cot.entrega)}" placeholder="Ej. 3 días"></label>
+      <label class="f">Notas<input id="c-notas" value="${esc(cot.notas)}"></label>
+      <label class="row" style="font-weight:600"><input type="checkbox" id="c-aviso" style="width:22px;min-height:22px"${cot.aviso?" checked":""}> Aviso de fotos y videos para redes</label>
+    </div></details>
+    <div class="total-bar"><div><div class="small" style="color:#B9C5D6" id="c-sub"></div><div class="big" id="c-total"></div></div><button class="btn orange" data-act="c-acciones">Listo</button></div>
+  </div>`;
+},after(){
+  $("c-cliente").addEventListener("input",e=>{cot.cliente=e.target.value;saveDraft()});
+  $("c-items").addEventListener("input",e=>{const f=e.target.dataset.f;if(!f)return;const box=e.target.closest(".prod[data-i]"),it=cot.items[+box.dataset.i];
+    it[f]=e.target.value;if(f==="normal")it.manual=true;refreshItem(box,it);cotTotals();saveDraft()});
+  [["c-pct",v=>cot.pct=n(v)/100],["c-vig",v=>cot.vigencia=n(v)],["c-ent",v=>cot.entrega=v],["c-notas",v=>cot.notas=v]].forEach(([id,fn])=>$(id).addEventListener("input",e=>{fn(e.target.value);cotTotals();saveDraft()}));
+  $("c-aviso").addEventListener("change",e=>{cot.aviso=e.target.checked;saveDraft()});
+  cotTotals();
+}};
+function itemHTML(it,i){
+  const p=itemPrice(it);
+  return `<div class="prod" data-i="${i}">
+    <div class="spread" style="margin-bottom:8px"><input data-f="desc" value="${esc(it.desc)}" placeholder="¿Qué es? (ej. Maqueta)" style="font-weight:650">${cot.items.length>1?`<button class="btn sm danger" data-act="c-del" data-i="${i}" style="flex:none" aria-label="Quitar">✕</button>`:""}</div>
+    <div class="grid3"><label class="f">Piezas<input data-f="cant" type="number" inputmode="numeric" value="${esc(it.cant)}"></label><label class="f">Horas c/u<input data-f="horas" type="number" inputmode="decimal" value="${esc(it.horas)}" placeholder="0"></label><label class="f">Gramos c/u<input data-f="gramos" type="number" inputmode="decimal" value="${esc(it.gramos)}" placeholder="0"></label></div>
+    <div style="margin-top:10px">${rolloChips([it.fid],"c-rollo",` data-i="${i}"`)}</div>
+    <details class="more" style="margin-top:6px"><summary>Tu tiempo y cómo sale el precio</summary><div class="stack" style="margin-top:8px">
+      <div class="grid2"><label class="f">Post-proceso (min c/u)<input data-f="postMin" type="number" inputmode="decimal" value="${esc(it.postMin)}" placeholder="0"></label><label class="f">Diseño (horas total)<input data-f="dis" type="number" inputmode="decimal" value="${esc(it.dis)}" placeholder="0"></label></div>
+      <div class="kv" data-kv></div></div></details>
+    <div class="price-row"><div><div class="lbl" data-plbl>${it.manual?"Precio que pusiste":"Precio por pieza"}</div><div class="p" data-p>${money0(p)}</div></div>
+      <div class="row" style="gap:6px"><input data-f="normal" type="number" inputmode="decimal" aria-label="Cambiar precio" value="${esc(p)}" style="width:110px">${it.manual?`<button class="btn sm sec" data-act="c-auto" data-i="${i}">Auto</button>`:""}</div></div>
+  </div>`;
+}
+function refreshItem(box,it){
+  const p=itemPrice(it),k=costoPieza(it),gan=p-k.total;
+  box.querySelector("[data-p]").textContent=money0(p);box.querySelector("[data-plbl]").textContent=it.manual?"Precio que pusiste":"Precio por pieza";
+  const inp=box.querySelector('[data-f="normal"]');if(document.activeElement!==inp)inp.value=p;
+  box.querySelector("[data-kv]").innerHTML=`<div><span>Material</span><span>${money(k.material)}</span></div><div><span>Luz</span><span>${money(k.luz)}</span></div><div><span>Desgaste</span><span>${money(k.desgaste)}</span></div><div><span>Tu tiempo</span><span>${money(k.labor)}</span></div><div><span><b>Costo real</b></span><span><b>${money(k.total)}</b></span></div><div><span>Ganancia por pieza</span><span>${money(gan)}</span></div><div><span>Ganancia por hora de impresora</span><span>${n(it.horas)?money((p-k.maquina)/n(it.horas)):"—"}</span></div><div><span>Con tu tarifa anterior</span><span>${money(precioAnterior(it))}</span></div>`;
+}
+function cotTotals(){
+  document.querySelectorAll("#c-items .prod[data-i]").forEach(b=>refreshItem(b,cot.items[+b.dataset.i]));
+  const d={items:cot.items,pct:cotPct()},t=docTot(d);
+  $("c-total").textContent=money0(t.total);
+  $("c-sub").textContent=`${t.pz} pieza(s)${t.desc>0.5?` · −${Math.round(n(d.pct)*100)}% mayoreo`:""}${t.total<n(C().min)?` · mínimo ${money0(C().min)}`:""}`;
+}
+ACT["c-add"]=()=>{cot.items.push(blankItem());saveDraft();render();const ins=document.querySelectorAll('[data-f="desc"]');ins[ins.length-1].focus()};
+ACT["c-del"]=b=>{cot.items.splice(+b.dataset.i,1);saveDraft();render()};
+ACT["c-auto"]=b=>{cot.items[+b.dataset.i].manual=false;saveDraft();render()};
+ACT["c-rollo"]=b=>{const it=cot.items[+b.dataset.i];it.fid=it.fid===b.dataset.fid?"":b.dataset.fid;saveDraft();
+  b.closest(".chips").querySelectorAll("[data-fid]").forEach(x=>x.setAttribute("aria-pressed",String(x.dataset.fid===it.fid)));cotTotals()};
+function docFromCot(tipo){
+  const items=cot.items.map(i=>({desc:String(i.desc||"").trim()||"Pieza impresa en 3D",cant:Math.max(1,Math.round(n(i.cant))),horas:n(i.horas),gramos:n(i.gramos),fid:i.fid||"",postMin:n(i.postMin),dis:n(i.dis),normal:itemPrice(i)}));
+  return{tipo,cliente:cot.cliente.trim()||"Cliente",items,pct:cotPct(),entrega:cot.entrega,vigencia:n(cot.vigencia),notas:cot.notas,aviso:cot.aviso?1:0};
+}
+ACT["c-acciones"]=()=>{
+  if(cot.items.some(i=>!itemPrice(i))){toast("A un producto le falta horas, gramos o precio");return}
+  openSheet("¿Qué hacemos?",`
+    <button class="btn full" data-act="c-pdf" data-t="cot">${svg('<path d="M12 3v12M7 10l5 5 5-5"/><path d="M5 21h14"/>')} Cotización en PDF</button>
+    <button class="btn full sec" data-act="c-pdf" data-t="ticket">Ticket de venta</button>
+    <button class="btn full ok" data-act="c-vendi">Ya lo vendí: registrar venta</button>
+    <button class="btn full sec" data-act="c-guardar">Solo guardar ${cot.editId?"cambios":"cotización"}</button>`)};
+function guardarDoc(tipo){
+  const base=docFromCot(tipo);let d;
+  if(cot.editId&&tipo==="cot"){d=state.docs.find(x=>x.id===cot.editId);Object.assign(d,base,{editado:today()})}
+  else{const key=tipo==="cot"?"folioC":"folioT",num=Math.max(1,Math.round(n(C()[key])));d={id:uid(),folio:(tipo==="cot"?"C-":"T-")+String(num).padStart(4,"0"),fecha:today(),...base};C()[key]=num+1;saveCfg()}
+  d.total=r2(docTot(d).total);save("docs",d);if(tipo==="cot")cot.editId=d.id;saveDraft();return d;
+}
+ACT["c-pdf"]=b=>{const d=guardarDoc(b.dataset.t);closeSheet();try{d.tipo==="cot"?pdfCot(d):pdfTicket(d)}catch(e){toast("No se pudo crear el PDF")}};
+ACT["c-guardar"]=()=>{guardarDoc("cot");closeSheet();toast("Cotización guardada");render()};
+ACT["c-vendi"]=()=>{const d=guardarDoc("cot");closeSheet();vf=newVf(ventaDesdeDoc(d));setTimeout(openVendi,150)};
+
+/* ================= PAGOS ================= */
+PAGES.pagos={html(){
+  const q=quincenas(),cur=q.find(x=>x.actual),pend=q.filter(x=>x.cerrada&&x.pend>0.5),hechas=q.filter(x=>x.pagado>0).reverse().slice(0,6),L=luz(),a=apartados();
+  return `<div class="page-h"><div><h1>Pagos</h1><p>Lo que te toca cada quincena y la luz de tu papá</p></div></div>
+  <div class="stack"><div class="desk2"><div class="stack">
+    ${pend.map(x=>`<div class="card" style="border-color:var(--ok)"><div class="lbl">Quincena ${x.label} · terminó</div><div class="spread"><div class="big pos">${money0(x.pend)}</div></div><p class="small muted" style="margin:4px 0 12px">Pásatelo de la cuenta del negocio a tu cuenta.</p><button class="btn ok full" data-act="q-hecho" data-k="${x.k}" data-m="${r2(x.pend)}">Ya lo hice</button></div>`).join("")}
+    <div class="card"><div class="lbl">Quincena actual · ${cur.label}</div><div class="big">${money0(cur.pend)}</div><p class="small muted" style="margin-top:4px">Se corta el ${dshort(cur.fin)}. Te va a tocar esto más lo que vendas de aquí a entonces.</p></div>
+    <div class="card"><div class="lbl">Luz para tu papá${L.ult?` · desde el ${dshort(L.ult)}`:""}</div><div class="big">${money0(Math.max(0,L.pend))}</div><p class="small muted" style="margin:4px 0 12px">${fmt(L.hDesde,1)} h de impresión · ${money(luzHora())} por hora</p><button class="btn full" data-act="luz-pago">Ya se lo di</button></div>
+  </div><div class="stack">
+    <div class="card"><h2>En la cuenta del negocio debería haber</h2><div class="big">${money0(a.total)}</div>
+      <div class="kv" style="margin-top:10px"><div><span>Reposición (para material)</span><span class="${a.reposicion<0?"neg":""}">${money(a.reposicion)}</span></div><div><span>Fondo</span><span>${money(a.fondo)}</span></div><div><span>Luz por dar</span><span>${money(a.luz)}</span></div><div><span>Tu dinero por pasarte</span><span>${money(a.mi)}</span></div></div>
+      <p class="small muted" style="margin-top:8px">Compáralo con tu saldo real. Si no cuadra, algo se quedó sin registrar.</p></div>
+    ${hechas.length||L.pagos.length?`<div class="card"><h2>Historial</h2><div class="list">${[...live("pagos")].sort((x,y)=>y.fecha.localeCompare(x.fecha)).slice(0,10).map(p=>`<div class="item" style="cursor:default"><div class="txt"><b>${p.tipo==="luz"?"Luz a tu papá":"Quincena "+qInfo(p.periodo).label}</b><span>${dshort(p.fecha)}</span></div><div class="amt">${money0(p.monto)}</div><button class="btn sm danger" data-act="pago-del" data-id="${esc(p.id)}" aria-label="Deshacer">↺</button></div>`).join("")}</div></div>`:""}
+  </div></div></div>`;
+}};
+ACT["q-hecho"]=b=>save("pagos",{id:uid(),tipo:"quincena",periodo:b.dataset.k,monto:n(b.dataset.m),fecha:today()},"¡Listo! Quincena pagada");
+ACT["luz-pago"]=()=>{const L=luz();openSheet("Luz para tu papá",`<label class="f">¿Cuánto le diste?<input id="lz-m" class="money" type="number" inputmode="decimal" value="${Math.max(0,r2(L.pend))}"></label><p class="small muted">Lo acumulado desde el último pago es ${money(Math.max(0,L.pend))}. Si le diste más o menos, cámbialo.</p><button class="btn full" data-act="lz-save">Guardar</button>`)};
+ACT["lz-save"]=()=>{const m=n($("lz-m").value);if(!m){toast("Escribe el monto");return}closeSheet();save("pagos",{id:uid(),tipo:"luz",monto:m,fecha:today()},"Pago de luz guardado")};
+ACT["pago-del"]=b=>{if(confirm("¿Deshacer este pago?"))remove("pagos",b.dataset.id,"Pago deshecho")};
+
+/* ================= MÁS ================= */
+PAGES.mas={html(){
+  const rows=[["ventas","Ventas","Historial, editar y marcar pagadas",live("ventas").length],["dentista","Dentista","Visitas y saldo",null],["cotizaciones","Cotizaciones y tickets","Editar, volver a descargar",live("docs").length],["paleta","Paleta de colores","¿Qué colores tienes?",null],["gastos","Gastos","Compras del negocio",live("gastos").length],["ajustes","Ajustes","Costos, precios, conexión",null]];
+  return `<div class="page-h"><div><h1>Más</h1></div></div><div class="card" style="padding:4px 16px"><div class="list">${rows.map(([k,t,d,c])=>`<button class="item" data-goto="${k}"><div class="txt"><b>${t}</b><span>${d}</span></div>${c?`<span class="tag">${c}</span>`:""}<span class="muted">›</span></button>`).join("")}</div></div>`;
+}};
+function back(){return `<button class="linkbtn" data-goto="mas">‹ Más</button>`}
+
+PAGES.ventas={html(){
+  const L=live("ventas").sort((a,b)=>(b.fecha+b._u).localeCompare(a.fecha+a._u)),cob=L.filter(v=>v.pagado).reduce((t,v)=>t+n(v.precio),0),deb=L.filter(v=>!v.pagado).reduce((t,v)=>t+n(v.precio),0);
+  return `${back()}<div class="page-h"><div><h1>Ventas</h1><p>Cobrado ${money0(cob)}${deb?` · te deben ${money0(deb)}`:""}</p></div><button class="btn sm ok" data-act="vendi">+ Vendí</button></div>
+  <div class="card" style="padding:4px 16px">${L.length?`<div class="list">${L.map(v=>`<button class="item" data-act="v-edit" data-id="${esc(v.id)}"><div class="txt"><b>${esc(v.cliente||"Venta")}</b><span>${dshort(v.fecha)} · ${esc(v.producto||"")}${!(v.usos||[]).length?" · sin rollo":""}</span></div><span class="tag ${v.pagado?"ok":"warn"}">${v.pagado?"Pagado":"Debe"}</span><div class="amt">${money0(v.precio)}</div></button>`).join("")}</div>`:`<div class="empty"><b>Sin ventas todavía</b>Usa el botón "Vendí" de Inicio.</div>`}</div>`;
+}};
+ACT["v-edit"]=b=>{const v=state.ventas.find(x=>x.id===b.dataset.id);vf={...v,usos:(v.usos||[]).map(u=>({...u})),precio:v.precio,horas:v.horas};openVendi()};
+
+PAGES.dentista={html(){
+  const s=dentSaldo(),L=live("dentista").sort((a,b)=>(b.fecha+b._u).localeCompare(a.fecha+a._u));
+  return `${back()}<div class="page-h"><div><h1>Dentista</h1><p>${s<0?`Te debe ${money0(-s)}`:s>0?`Tiene ${money0(s)} a favor`:"Están a mano"}</p></div><button class="btn sm" data-act="dentista">+ Visita</button></div>
+  <div class="card" style="padding:4px 16px">${L.length?`<div class="list">${L.map(v=>`<div class="item" style="cursor:default"><div class="txt"><b>${n(v.piezas)} pieza(s)</b><span>${dshort(v.fecha)} · pagó ${money0(v.pago)}</span></div><button class="btn sm danger" data-act="d-del" data-id="${esc(v.id)}">Borrar</button></div>`).join("")}</div>`:`<div class="empty">Sin visitas.</div>`}</div>`;
+}};
+ACT["d-del"]=b=>{if(confirm("¿Borrar esta visita?"))remove("dentista",b.dataset.id,"Visita borrada")};
+
+PAGES.cotizaciones={html(){
+  const L=live("docs").sort((a,b)=>(b.fecha+b.folio).localeCompare(a.fecha+a.folio));
+  return `${back()}<div class="page-h"><div><h1>Cotizaciones y tickets</h1></div><button class="btn sm" data-act="nueva-cot">+ Nueva</button></div>
+  <div class="card" style="padding:4px 16px">${L.length?`<div class="list">${L.map(d=>`<button class="item" data-act="doc" data-id="${esc(d.id)}"><div class="txt"><b>${esc(d.cliente)}</b><span>${d.folio} · ${dshort(d.fecha)} · ${d.items.map(i=>esc(i.desc)).join(", ")}</span></div>${d.vendida?'<span class="tag ok">Vendida</span>':`<span class="tag ${d.tipo==="cot"?"acc":"ok"}">${d.tipo==="cot"?"Cotización":"Ticket"}</span>`}<div class="amt">${money0(docTot(d).total)}</div></button>`).join("")}</div>`:`<div class="empty">Sin documentos.</div>`}</div>`;
+}};
+ACT.doc=b=>{const d=state.docs.find(x=>x.id===b.dataset.id);
+  openSheet(`${esc(d.folio)} · ${esc(d.cliente)}`,`<div class="big">${money0(docTot(d).total)}</div><p class="small muted">${d.items.map(i=>`${esc(i.desc)} ×${i.cant}`).join(" · ")}</p>
+    <button class="btn full" data-act="d-pdf" data-id="${esc(d.id)}">Descargar PDF</button>
+    ${d.tipo==="cot"?`<button class="btn full sec" data-act="d-edit" data-id="${esc(d.id)}">Editar</button><button class="btn full sec" data-act="d-ticket" data-id="${esc(d.id)}">Hacer ticket</button>${d.vendida?"":`<button class="btn full ok" data-act="d-vendi" data-id="${esc(d.id)}">Ya la vendí</button>`}`:""}
+    <button class="btn full danger" data-act="d-borrar" data-id="${esc(d.id)}">Borrar</button>`)};
+ACT["d-pdf"]=b=>{const d=state.docs.find(x=>x.id===b.dataset.id);try{d.tipo==="cot"?pdfCot(d):pdfTicket(d)}catch(e){toast("No se pudo crear el PDF")}};
+ACT["d-edit"]=b=>{const d=state.docs.find(x=>x.id===b.dataset.id);cot={editId:d.id,cliente:d.cliente,pct:n(d.pct),entrega:d.entrega||"",vigencia:d.vigencia||15,notas:d.notas||"",aviso:!!d.aviso,items:d.items.map(i=>({...i,manual:true}))};saveDraft();closeSheet();go("cotizar");render()};
+ACT["d-ticket"]=b=>{const d=state.docs.find(x=>x.id===b.dataset.id),num=Math.max(1,Math.round(n(C().folioT)));const t={...clean(d),id:uid(),tipo:"ticket",folio:"T-"+String(num).padStart(4,"0"),fecha:today(),vendida:0};C().folioT=num+1;saveCfg();save("docs",t);closeSheet();try{pdfTicket(t)}catch(e){toast("No se pudo crear el PDF")}};
+ACT["d-vendi"]=b=>{const d=state.docs.find(x=>x.id===b.dataset.id);closeSheet();vf=newVf(ventaDesdeDoc(d));setTimeout(openVendi,150)};
+ACT["d-borrar"]=b=>{if(confirm("¿Borrar este documento?")){closeSheet();remove("docs",b.dataset.id,"Borrado")}};
+
+/* paleta */
+let palG=50;
+function paleta(){const g=n(palG),G={};rollos().forEach(f=>{const k=f.color.toLowerCase()+"|"+f.material,r=Math.max(0,resta(f));G[k]=G[k]||{color:f.color,material:f.material,hex:f.hex,total:0};G[k].total+=r});
+  return Object.values(G).map(x=>({...x,ok:x.total>=g})).sort((a,b)=>(b.ok-a.ok)||a.color.localeCompare(b.color))}
+PAGES.paleta={html(){return `${back()}<div class="page-h"><div><h1>Paleta de colores</h1><p>Para cuando te pregunten qué colores tienes</p></div></div>
+  <div class="stack"><label class="f">¿Cuántos gramos lleva la pieza?<input id="pal-g" type="number" inputmode="decimal" value="${esc(palG)}"></label><div class="card"><div class="paleta" id="pal"></div></div>
+  <div class="grid2"><button class="btn" data-act="pal-img">Mandar imagen</button><button class="btn sec" data-act="pal-txt">Copiar lista</button></div></div>`},
+  after(){const up=()=>{palG=n($("pal-g").value);$("pal").innerHTML=paleta().map(c=>`<div class="pc${c.ok?"":" no"}">${sw(c.hex)}<b>${esc(c.color)}</b><span class="small muted">${esc(c.material)}</span></div>`).join("")||`<div class="empty">Agrega rollos para ver tu paleta.</div>`};$("pal-g").addEventListener("input",up);up()}};
+ACT["pal-txt"]=()=>{const L=paleta().filter(c=>c.ok);if(!L.length){toast("Ningún color alcanza");return}const t="Colores disponibles:\n"+L.map(c=>`• ${c.color} (${c.material})`).join("\n");
+  if(navigator.share)navigator.share({text:t}).catch(()=>{});else navigator.clipboard.writeText(t).then(()=>toast("Lista copiada"))};
+ACT["pal-img"]=()=>{const L=paleta().filter(c=>c.ok);if(!L.length){toast("Ningún color alcanza");return}
+  const cols=3,cell=300,W=cols*cell+80,H=330+Math.ceil(L.length/cols)*270+40,cv=document.createElement("canvas");cv.width=W;cv.height=H;const x=cv.getContext("2d");
+  x.fillStyle="#fff";x.fillRect(0,0,W,H);x.fillStyle="#13223D";x.fillRect(0,0,W,200);
+  if(logoImg){x.fillStyle="#fff";x.fillRect(40,36,128,128);x.drawImage(logoImg,46,42,116,116)}
+  x.fillStyle="#fff";x.font="800 52px system-ui,sans-serif";x.fillText(C().negocio,196,100);x.font="500 30px system-ui,sans-serif";x.fillStyle="#C9D3E2";x.fillText("Colores disponibles",196,146);
+  x.fillStyle="#5B6779";x.font="500 26px system-ui,sans-serif";x.fillText(`Actualizado ${dlong(today())}`,40,260);
+  L.forEach((c,i)=>{const cx=40+(i%cols)*cell+cell/2,cy=350+Math.floor(i/cols)*270;x.beginPath();x.arc(cx,cy+30,74,0,7);x.fillStyle=c.hex;x.fill();x.lineWidth=3;x.strokeStyle="rgba(0,0,0,.15)";x.stroke();
+    x.textAlign="center";x.fillStyle="#172235";x.font="700 30px system-ui,sans-serif";x.fillText(c.color,cx,cy+148);x.fillStyle="#5B6779";x.font="500 24px system-ui,sans-serif";x.fillText(c.material,cx,cy+182);x.textAlign="left"});
+  shareFile(dataToBlob(cv.toDataURL("image/png")),`Colores_${today()}.png`,"image/png")};
+
+/* gastos */
+PAGES.gastos={html(){const L=live("gastos").sort((a,b)=>(b.fecha+b._u).localeCompare(a.fecha+a._u));
+  return `${back()}<div class="page-h"><div><h1>Gastos</h1><p>Total ${money0(L.reduce((t,g)=>t+n(g.monto),0))}</p></div><button class="btn sm" data-act="gasto">+ Gasto</button></div>
+  <div class="card" style="padding:4px 16px">${L.length?`<div class="list">${L.map(g=>`<div class="item" style="cursor:default"><div class="txt"><b>${esc(g.concepto||g.categoria)}</b><span>${dshort(g.fecha)} · ${esc(g.categoria)} · de ${SALE_DE[g.saleDe||defSaleDe(g.categoria)]}</span></div><div class="amt">${money0(g.monto)}</div><button class="btn sm danger" data-act="g-del" data-id="${esc(g.id)}" aria-label="Borrar">✕</button></div>`).join("")}</div>`:`<div class="empty">Sin gastos.</div>`}</div>`}};
+let gf=null;
+ACT.gasto=()=>{gf={cat:"Material",de:"rep"};openSheet("Nuevo gasto",`<label class="f">¿Cuánto?<input id="g-m" class="money" type="number" inputmode="decimal" placeholder="$0"></label><label class="f">¿Qué compraste?<input id="g-c" placeholder="Ej. Boquilla 0.4"></label>
+  <div class="chips wrap">${CATS.map(c=>`<button type="button" class="chip plain" data-act="g-cat" data-v="${c}" aria-pressed="${gf.cat===c}">${c}</button>`).join("")}</div>
+  <div><div class="lbl" style="margin-bottom:6px">¿De dónde salió?</div><div class="seg" id="g-de">${Object.entries(SALE_DE).map(([k,l])=>`<button type="button" data-act="g-de" data-v="${k}" aria-pressed="${gf.de===k}">${l}</button>`).join("")}</div></div>
+  <button class="btn full" data-act="g-save">Guardar gasto</button>`)};
+ACT["g-cat"]=b=>{gf.cat=b.dataset.v;gf.de=defSaleDe(gf.cat);document.querySelectorAll('[data-act="g-cat"]').forEach(x=>x.setAttribute("aria-pressed",String(x===b)));document.querySelectorAll('[data-act="g-de"]').forEach(x=>x.setAttribute("aria-pressed",String(x.dataset.v===gf.de)))};
+ACT["g-de"]=b=>{gf.de=b.dataset.v;document.querySelectorAll('[data-act="g-de"]').forEach(x=>x.setAttribute("aria-pressed",String(x===b)))};
+ACT["g-save"]=()=>{const m=n($("g-m").value);if(!m){toast("Escribe el monto");return}closeSheet();save("gastos",{id:uid(),fecha:today(),concepto:$("g-c").value.trim(),categoria:gf.cat,monto:m,saleDe:gf.de},"Gasto guardado")};
+ACT["g-del"]=b=>{if(confirm("¿Borrar este gasto?"))remove("gastos",b.dataset.id,"Gasto borrado")};
+
+/* ajustes */
+function cfgIn(k,l,o){o=o||{};const v=C()[k],val=o.pct?Math.round(n(v)*1000)/10:v;return `<label class="f">${l}<input data-cfg="${k}"${o.pct?" data-pct":""} type="${o.text?"text":"number"}" ${o.text?"":'inputmode="decimal"'} value="${esc(val)}">${o.hint?`<span class="small muted" style="font-weight:500">${o.hint}</span>`:""}</label>`}
+PAGES.ajustes={html(){const c=C();return `${back()}<div class="page-h"><div><h1>Ajustes</h1></div></div><div class="stack">
+  <div class="card"><h2>Conexión</h2><p class="small muted" style="margin-bottom:10px">${conn&&conn.url?"Conectado a tu Google Sheet.":"Sin conectar: los datos solo están en este dispositivo."} ${Object.keys(outbox).length?`Faltan ${Object.keys(outbox).length} cambio(s) por subir.`:""}</p>
+    <div class="stack"><label class="f">URL del Apps Script<input id="a-url" type="url" value="${esc(conn?conn.url:"")}"></label><label class="f">Clave<input id="a-key" type="password" value="${esc(conn?conn.key:"")}"></label><div class="grid2"><button class="btn" data-act="a-conn">Guardar y sincronizar</button><button class="btn sec" data-act="a-full">Descargar todo de nuevo</button></div></div></div>
+  <div class="card"><h2>Dinero</h2><div class="grid2">${cfgIn("fondoInicial","Fondo con el que empezaste")}${cfgIn("pMi","Para ti (% de la ganancia)",{pct:1,hint:"El resto va al fondo"})}</div></div>
+  <div class="card"><h2>Precio</h2><div class="grid2">${cfgIn("margen","Ganancia sobre costo (%)",{pct:1})}${cfgIn("gmin","Ganancia mínima por hora")}${cfgIn("min","Pedido mínimo")}${cfgIn("mayMin","Mayoreo desde (piezas)")}${cfgIn("mayPct","Descuento mayoreo (%)",{pct:1})}${cfgIn("dis","Tu hora de diseño")}${cfgIn("post","Tu hora de post-proceso")}</div></div>
+  <div class="card"><h2>Costos reales</h2><div class="grid2">${cfgIn("precioKg","Filamento por kg")}${cfgIn("merma","Fallas y merma (%)",{pct:1})}${cfgIn("watts","Consumo impresora (W)")}${cfgIn("kwh","Precio kWh con IVA")}${cfgIn("impresora","Precio impresora")}${cfgIn("vida","Vida útil (horas)")}${cfgIn("mant","Mantenimiento por hora")}</div>
+    <p class="small muted" style="margin-top:8px">Una hora de impresora te cuesta ${money(luzHora()+horaMaq())}: ${money(luzHora())} de luz y ${money(horaMaq())} de desgaste.</p></div>
+  <div class="card"><h2>Dentista y rollos</h2><div class="grid2">${cfgIn("dent","Precio pieza dental")}${cfgIn("dentHoras","Horas por pieza")}${cfgIn("dentGramos","Gramos por pieza")}${cfgIn("secadoDias","Secar cada (días)")}${cfgIn("stockBajo","Avisar bajo de (g)")}</div></div>
+  <div class="card"><h2>Cotizaciones</h2><div class="stack">${cfgIn("negocio","Nombre",{text:1})}${cfgIn("tel","Teléfono",{text:1})}${cfgIn("ig","Instagram",{text:1})}${cfgIn("pie","Mensaje al pie",{text:1})}<label class="f">Aviso de fotos y videos<textarea data-cfg="avisoRedes">${esc(c.avisoRedes)}</textarea></label><div class="grid2">${cfgIn("folioC","Siguiente folio cotización")}${cfgIn("folioT","Siguiente folio ticket")}</div></div></div>
+  </div>`},
+  after(){document.querySelectorAll("[data-cfg]").forEach(i=>i.addEventListener("change",()=>{const k=i.dataset.cfg;let v=i.type==="number"?n(i.value):i.value;if(i.hasAttribute("data-pct"))v=Math.max(0,v)/100;if(k==="pMi")v=Math.min(1,v);C()[k]=v;saveCfg("Guardado")}))}};
+ACT["a-conn"]=()=>{const url=$("a-url").value.trim(),key=$("a-key").value.trim();conn=url?{url,key}:null;store(LS.conn,conn);toast(url?"Conexión guardada":"Desconectado");syncNow()};
+ACT["a-full"]=()=>{lastPull=0;store(LS.pull,0);syncNow();toast("Descargando todo del Sheet…")};
+
+/* ================= Archivos: compartir o descargar ================= */
+function dataToBlob(url){const[h,b]=url.split(","),bin=atob(b),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return new Blob([u],{type:h.split(":")[1].split(";")[0]})}
+function shareFile(blob,name,type){
+  const file=new File([blob],name,{type});
+  if(navigator.canShare&&navigator.canShare({files:[file]})){navigator.share({files:[file],title:name}).catch(()=>{});return}
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);toast("Descargado");
+}
+
+/* ================= PDFs ================= */
+let logoImg=null,logoJpg=null;
+(()=>{const i=new Image();i.onload=()=>{logoImg=i;const cv=document.createElement("canvas");cv.width=cv.height=320;const x=cv.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,320,320);x.drawImage(i,0,0,320,320);try{logoJpg=cv.toDataURL("image/jpeg",.92)}catch(e){}};i.src="logo.png"})();
+const NAVYc=[19,34,61],BLUEc=[47,104,176],GOLDc=[154,122,34],ORc=[224,140,44],GREYc=[91,103,121];
+const PM=x=>"$"+(Math.round(x*100)/100).toLocaleString("es-MX",{minimumFractionDigits:2,maximumFractionDigits:2});
+const fname=(t,f,c)=>`${t}_${f}_${String(c).replace(/[^\wáéíóúñÁÉÍÓÚÑ -]/g,"").trim().replace(/\s+/g,"_")}.pdf`;
+const contacto=()=>{const c=C();return[c.tel&&("Tel. "+c.tel),c.ig&&("IG @"+String(c.ig).replace(/^@/,""))].filter(Boolean).join("   ·   ")};
+function pdfCot(d){
+  const{jsPDF}=window.jspdf,doc=new jsPDF({unit:"mm",format:"letter"}),W=215.9,M=18,c=C(),t=docTot(d),disc=n(d.pct)>0.0001;
+  const head=()=>{doc.setFillColor(...NAVYc);doc.rect(0,0,W,40,"F");doc.setFillColor(...ORc);doc.rect(0,40,W,1.4,"F");
+    if(logoJpg){doc.setFillColor(255,255,255);doc.roundedRect(M,6,28,28,3,3,"F");doc.addImage(logoJpg,"JPEG",M+1,7,26,26)}
+    doc.setTextColor(255);doc.setFont("helvetica","bold");doc.setFontSize(20);doc.text(c.negocio||"3DPRINTECH",M+34,19);doc.setFont("helvetica","normal");doc.setFontSize(9.5);doc.text(contacto()||"Impresión 3D",M+34,26);
+    doc.setFont("helvetica","bold");doc.setFontSize(16);doc.text("COTIZACIÓN",W-M,18,{align:"right"});doc.setFont("helvetica","normal");doc.setFontSize(9.5);doc.text(`Folio ${d.folio}`,W-M,25,{align:"right"});doc.text(`Fecha ${dlong(d.fecha)}`,W-M,30.5,{align:"right"})};
+  head();let y=54;const need=h=>{if(y+h>250){doc.addPage();head();y=52}};
+  doc.setTextColor(...GREYc);doc.setFontSize(9);doc.text("PARA",M,y);doc.setTextColor(...NAVYc);doc.setFont("helvetica","bold");doc.setFontSize(13);doc.text(d.cliente,M,y+6);y+=16;
+  const cols=disc?[M,M+78,M+98,M+124]:[M,M+100,M+124];
+  const th=()=>{doc.setFillColor(...BLUEc);doc.rect(M,y,W-2*M,9,"F");doc.setTextColor(255);doc.setFont("helvetica","bold");doc.setFontSize(9.5);doc.text("Descripción",M+3,y+6);doc.text("Cant.",cols[1]+2,y+6);doc.text("Precio normal",cols[2]+2,y+6);if(disc)doc.text("Con descuento",cols[3]+2,y+6);doc.text("Importe",W-M-3,y+6,{align:"right"});y+=9};
+  th();doc.setFont("helvetica","normal");doc.setFontSize(10);
+  d.items.forEach((it,k)=>{const L=doc.splitTextToSize(it.desc,(cols[1]-M)-6),h=Math.max(9,L.length*4.6+4.5);if(y+h>250){doc.addPage();head();y=52;th();doc.setFont("helvetica","normal");doc.setFontSize(10)}
+    if(k%2){doc.setFillColor(246,248,250);doc.rect(M,y,W-2*M,h,"F")}doc.setTextColor(...NAVYc);doc.text(L,M+3,y+6);doc.text(String(it.cant),cols[1]+2,y+6);doc.text(PM(it.normal),cols[2]+2,y+6);
+    const u=it.normal*(1-n(d.pct));if(disc)doc.text(PM(u),cols[3]+2,y+6);doc.text(PM(u*it.cant),W-M-3,y+6,{align:"right"});y+=h});
+  doc.setDrawColor(215,221,229);doc.line(M,y,W-M,y);y+=8;need(40);const bx=W-M-74;let ty=y;
+  const T=[["Total a precio normal",PM(t.normal)]];if(disc)T.push([`Descuento${t.pz>=n(c.mayMin)?" por mayoreo":""} (${Math.round(n(d.pct)*100)}%)`,"-"+PM(t.desc)]);
+  T.forEach(([a,b])=>{doc.setTextColor(...GREYc);doc.setFontSize(9.5);doc.text(a,bx,ty);doc.setTextColor(...NAVYc);doc.text(b,W-M,ty,{align:"right"});ty+=6});
+  doc.setFillColor(...NAVYc);doc.roundedRect(bx-3,ty-2,77,13,2,2,"F");doc.setTextColor(255);doc.setFont("helvetica","bold");doc.setFontSize(12);doc.text("TOTAL",bx,ty+6.5);doc.text(PM(t.total),W-M,ty+6.5,{align:"right"});doc.setFillColor(...ORc);doc.rect(bx-3,ty+11,77,1.2,"F");
+  doc.setFont("helvetica","bold");doc.setFontSize(10.5);doc.setTextColor(...NAVYc);doc.text("Detalles de impresión",M,y);let ly=y+6;doc.setFont("helvetica","normal");doc.setFontSize(9.5);doc.setTextColor(...GREYc);
+  d.items.filter(i=>i.horas||i.gramos).forEach(i=>{const f=fil(i.fid),L=doc.splitTextToSize(`${i.desc}: ${i.horas?(Math.round(i.horas*10)/10)+" h":""}${i.horas&&i.gramos?" · ":""}${i.gramos?Math.round(i.gramos)+" g por pieza":""}${f?" · "+f.material+" "+f.color:""}`,bx-M-8);doc.text(L,M,ly);ly+=L.length*4.6+1});
+  y=Math.max(ly,ty+18)+6;
+  const N=[];if(d.entrega)N.push("Tiempo de entrega: "+d.entrega);if(d.vigencia)N.push(`Vigencia de la cotización: ${d.vigencia} días`);if(d.notas)N.push(d.notas);
+  if(N.length){need(12+N.length*6);doc.setFont("helvetica","bold");doc.setFontSize(10.5);doc.setTextColor(...NAVYc);doc.text("Detalles de entrega",M,y);y+=6;doc.setFont("helvetica","normal");doc.setFontSize(10);N.forEach(x=>{const L=doc.splitTextToSize("•  "+x,W-2*M);need(L.length*5);doc.text(L,M,y);y+=L.length*5+1.5})}
+  if(d.aviso&&c.avisoRedes){const L=doc.splitTextToSize(c.avisoRedes,W-2*M-10),h=L.length*4.6+10;y+=4;need(h);doc.setFillColor(248,235,217);doc.roundedRect(M,y,W-2*M,h,2,2,"F");doc.setFont("helvetica","bold");doc.setFontSize(9.5);doc.setTextColor(...NAVYc);doc.text("Fotos y videos",M+5,y+6);doc.setFont("helvetica","normal");doc.setTextColor(...GREYc);doc.text(L,M+5,y+11)}
+  const P=doc.getNumberOfPages();for(let p=1;p<=P;p++){doc.setPage(p);doc.setDrawColor(...GOLDc);doc.setLineWidth(.8);doc.line(M,262,W-M,262);doc.setTextColor(...GREYc);doc.setFont("helvetica","normal");doc.setFontSize(9);doc.text(c.pie||"",W/2,268,{align:"center"});if(contacto())doc.text(contacto(),W/2,273,{align:"center"});if(P>1)doc.text(`${p} / ${P}`,W-M,273,{align:"right"})}
+  shareFile(doc.output("blob"),fname("Cotizacion",d.folio,d.cliente),"application/pdf");
+}
+function pdfTicket(d){
+  const{jsPDF}=window.jspdf,c=C(),W=80,M=6,t=docTot(d),disc=n(d.pct)>0.0001,meas=new jsPDF({unit:"mm",format:[W,100]});meas.setFontSize(9);
+  const B=d.items.map(i=>meas.splitTextToSize(i.desc,W-2*M)),H=112+B.reduce((h,b)=>h+b.length*4+6,0)+(disc?10:0)+(d.notas?12:0),doc=new jsPDF({unit:"mm",format:[W,H]});let y=8;
+  if(logoJpg)doc.addImage(logoJpg,"JPEG",W/2-13,y,26,26);y+=31;doc.setTextColor(...NAVYc);doc.setFont("helvetica","bold");doc.setFontSize(13);doc.text(c.negocio||"3DPRINTECH",W/2,y,{align:"center"});y+=5;
+  doc.setFont("helvetica","normal");doc.setFontSize(8);doc.setTextColor(...GREYc);if(contacto()){doc.text(contacto(),W/2,y,{align:"center"});y+=5}
+  const dash=()=>{doc.setDrawColor(150);doc.setLineDashPattern([1,1],0);doc.line(M,y,W-M,y);doc.setLineDashPattern([],0);y+=5};
+  dash();doc.setTextColor(...NAVYc);doc.setFont("helvetica","bold");doc.setFontSize(10);doc.text("TICKET DE VENTA",W/2,y,{align:"center"});y+=5;doc.setFont("helvetica","normal");doc.setFontSize(8.5);doc.text(`Folio: ${d.folio}`,M,y);doc.text(dlong(d.fecha),W-M,y,{align:"right"});y+=4.5;doc.text(`Cliente: ${d.cliente}`,M,y);y+=4;dash();doc.setFontSize(9);
+  d.items.forEach((i,k)=>{doc.setTextColor(...NAVYc);doc.text(B[k],M,y);y+=B[k].length*4;doc.setTextColor(...GREYc);doc.text(`${i.cant} x ${PM(i.normal)}`,M+2,y);doc.setTextColor(...NAVYc);doc.text(PM(i.cant*i.normal),W-M,y,{align:"right"});y+=6});
+  dash();if(disc){doc.text("Subtotal",M,y);doc.text(PM(t.normal),W-M,y,{align:"right"});y+=5;doc.text(`Descuento (${Math.round(n(d.pct)*100)}%)`,M,y);doc.text("-"+PM(t.desc),W-M,y,{align:"right"});y+=5}
+  doc.setFont("helvetica","bold");doc.setFontSize(13);doc.text("TOTAL",M,y+1);doc.text(PM(t.total),W-M,y+1,{align:"right"});y+=8;doc.setFont("helvetica","normal");doc.setFontSize(9);doc.text(`${t.pz} pieza(s)`,W-M,y,{align:"right"});y+=5;
+  if(d.notas){const L=doc.splitTextToSize(d.notas,W-2*M);doc.setTextColor(...GREYc);doc.text(L,M,y);y+=L.length*4+2}
+  dash();doc.setTextColor(...NAVYc);doc.setFontSize(9);doc.text(c.pie||"",W/2,y,{align:"center"});
+  shareFile(doc.output("blob"),fname("Ticket",d.folio,d.cliente),"application/pdf");
+}
+
+/* ================= Arranque ================= */
+function start(){$("welcome").classList.add("hidden");$("shell").classList.remove("hidden");page=(location.hash||"#inicio").slice(1);if(!PAGES[page])page="inicio";render();syncNow()}
+$("btn-sync").addEventListener("click",syncNow);
+$("w-go").addEventListener("click",async()=>{
+  const url=$("w-url").value.trim(),key=$("w-key").value.trim();if(!url||!key){$("w-msg").textContent="Pon la URL y la clave.";return}
+  $("w-msg").textContent="Conectando…";conn={url,key};
+  try{const r=await api("ping");if(!r.ok){$("w-msg").textContent=r.error==="clave"?"La clave no coincide con la del Apps Script.":"El Apps Script respondió con error.";return}
+    store(LS.conn,conn);lastPull=0;store(LS.pull,0);if(!C()._u)saveCfg();start()}catch(e){$("w-msg").textContent="No se pudo conectar. Revisa la URL (debe terminar en /exec) y tu internet."}});
+$("w-local").addEventListener("click",()=>{store(LS.conn,null);conn=null;if(!C()._u)saveCfg();start()});
+if(conn||C()._u)start();else $("welcome").classList.remove("hidden");
+if("serviceWorker" in navigator&&location.protocol.startsWith("http"))navigator.serviceWorker.register("sw.js").catch(()=>{});
+window.__3dp={get state(){return state},quincenas,apartados,luz,go};
+})();
+</script>
+</body>
+</html>
