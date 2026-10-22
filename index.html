@@ -238,7 +238,7 @@ const DEFAULT_CFG={
   secadoDias:14,stockBajo:200,fondoInicial:315,
   negocio:"3DPRINTECH",tel:"3333929527",ig:"3dprintech__",pie:"Gracias por tu preferencia",
   avisoOn:1,avisoRedes:"A veces grabo el proceso de impresión para mis redes sociales. Antes de publicar fotos o videos de tu pieza, te pido permiso.",
-  ultimoSecado:"",ultimoDentFid:"",t1:35,t2:30,lim:15,multi:10
+  ultimoSecado:"",ultimoDentFid:"",hora1:35,hora2:40,horaLim:15
 };
 const COLS=["ventas","dentista","gastos","docs","filamentos","movs","pagos"];
 const PRESETS=[["Negro","#1f1f1f"],["Blanco","#f4f4f2"],["Gris","#8a8f96"],["Plata","#c4c8cc"],["Rojo","#c62f2f"],["Naranja","#e8792b"],["Amarillo","#f2c230"],["Verde","#2e8b57"],["Azul","#2f5fb3"],["Morado","#7b4bb7"],["Rosa","#e48bb3"],["Café","#7a4e2d"],["Dorado","#c9a227"],["Transparente","#dfeef3"]];
@@ -333,12 +333,13 @@ const cgOf=fid=>{const f=fil(fid);return f&&n(f.pesoNuevo)>0?n(f.costo)/n(f.peso
 const horaMaq=()=>(n(C().vida)>0?n(C().impresora)/n(C().vida):0)+n(C().mant);
 const luzHora=()=>n(C().watts)/1000*n(C().kwh);
 function costoPieza(it){
-  const c=C(),cant=Math.max(1,Math.round(n(it.cant)||1)),h=n(it.horas),g=n(it.gramos);
-  const material=g*cgOf(it.fid)*(1+n(c.merma)),luz=h*luzHora(),desgaste=h*horaMaq(),labor=n(it.postMin)/60*n(c.post)+n(it.dis)*n(c.dis)/cant;
+  const c=C(),cant=Math.max(1,Math.round(n(it.cant)||1)),h=n(it.horas),us=it.multi?(it.usos||[]).filter(u=>n(u.g)>0):null;
+  const material=(us?us.reduce((t,u)=>t+n(u.g)*cgOf(u.fid),0):n(it.gramos)*cgOf(it.fid))*(1+n(c.merma)),luz=h*luzHora(),desgaste=h*horaMaq(),labor=n(it.postMin)/60*n(c.post)+n(it.dis)*n(c.dis)/cant;
   return{material,luz,desgaste,labor,maquina:material+luz+desgaste,total:material+luz+desgaste+labor};
 }
-function precioSugerido(it){const k=costoPieza(it),c=C();return Math.ceil(Math.max(k.total*(1+n(c.margen)),k.total+n(it.horas)*n(c.gmin))-0.0001)}
-function precioAnterior(it){const c=C(),h=n(it.horas);return h*(h<n(c.lim)?n(c.t1):n(c.t2))}
+function precioReal(it){const k=costoPieza(it),c=C();return Math.max(k.total*(1+n(c.margen)),k.total+n(it.horas)*n(c.gmin))}
+function precioAnterior(it){const c=C(),h=n(it.horas);return h*(h<n(c.horaLim)?n(c.hora1):n(c.hora2))}
+function precioSugerido(it){return Math.ceil(Math.max(precioReal(it),precioAnterior(it))-0.0001)}
 function repartir(monto,k){
   const fixed=k.material+k.luz+k.desgaste,gan=monto-fixed-k.labor,p=Math.min(1,Math.max(0,n(C().pMi)));
   let mi,fondo;if(gan>=0){mi=k.labor+gan*p;fondo=gan*(1-p)}else if(monto-fixed>=0){mi=monto-fixed;fondo=0}else{mi=0;fondo=monto-fixed}
@@ -513,7 +514,7 @@ ACT["vf-save"]=()=>{
 };
 ACT["vf-del"]=()=>{if(confirm("¿Borrar esta venta? Su filamento regresa al rollo.")){closeSheet();remove("ventas",vf.id,"Venta borrada")}};
 function ventaDesdeDoc(d){
-  const t=docTot(d),by={};d.items.forEach(i=>{if(i.fid)by[i.fid]=(by[i.fid]||0)+n(i.gramos)*n(i.cant)});
+  const t=docTot(d),by={};d.items.forEach(i=>{if(i.multi)(i.usos||[]).forEach(u=>{by[u.fid]=(by[u.fid]||0)+n(u.g)*n(i.cant)});else if(i.fid)by[i.fid]=(by[i.fid]||0)+n(i.gramos)*n(i.cant)});
   const usos=Object.entries(by).map(([fid,g])=>({fid,g:r2(g)}));
   return{cliente:d.cliente,producto:d.items.map(i=>`${i.desc} ×${i.cant}`).join(", "),precio:r2(t.total),horas:r2(d.items.reduce((s,i)=>s+n(i.horas)*n(i.cant),0)),usos,multi:usos.length>1,labor:r2(d.items.reduce((s,i)=>s+costoPieza(i).labor*n(i.cant),0)),docId:d.id};
 }
@@ -599,7 +600,8 @@ ACT["mf-save"]=()=>{const g=n($("mf-g").value),h=n($("mf-h").value);if(!g&&!h){t
 
 /* ================= COTIZAR ================= */
 function blankCot(){return{editId:null,cliente:"",pct:null,entrega:"",vigencia:15,notas:"",aviso:!!n(C().avisoOn),items:[blankItem()]}}
-function blankItem(){return{desc:"",cant:1,horas:"",gramos:"",fid:"",postMin:"",dis:"",normal:0,manual:false}}
+function blankItem(){return{desc:"",cant:1,horas:"",gramos:"",fid:"",multi:false,usos:[],postMin:"",dis:"",normal:0,manual:false}}
+const sumG=it=>it.multi?(it.usos||[]).reduce((t,u)=>t+n(u.g),0):n(it.gramos);
 let cot=load(LS.draft,null)||blankCot();
 const saveDraft=()=>store(LS.draft,cot);
 function itemPrice(it){if(!it.manual)it.normal=precioSugerido(it);return n(it.normal)}
@@ -622,7 +624,8 @@ PAGES.cotizar={html(){
   </div>`;
 },after(){
   $("c-cliente").addEventListener("input",e=>{cot.cliente=e.target.value;saveDraft()});
-  $("c-items").addEventListener("input",e=>{const f=e.target.dataset.f;if(!f)return;const box=e.target.closest(".prod[data-i]"),it=cot.items[+box.dataset.i];
+  $("c-items").addEventListener("input",e=>{const ug=e.target.dataset.ug;if(ug!=null){const box=e.target.closest(".prod[data-i]"),it=cot.items[+box.dataset.i];it.usos[+ug].g=e.target.value;it.gramos=sumG(it);refreshItem(box,it);cotTotals();saveDraft();return}
+    const f=e.target.dataset.f;if(!f)return;const box=e.target.closest(".prod[data-i]"),it=cot.items[+box.dataset.i];
     it[f]=e.target.value;if(f==="normal")it.manual=true;refreshItem(box,it);cotTotals();saveDraft()});
   [["c-pct",v=>cot.pct=n(v)/100],["c-vig",v=>cot.vigencia=n(v)],["c-ent",v=>cot.entrega=v],["c-notas",v=>cot.notas=v]].forEach(([id,fn])=>$(id).addEventListener("input",e=>{fn(e.target.value);cotTotals();saveDraft()}));
   $("c-aviso").addEventListener("change",e=>{cot.aviso=e.target.checked;saveDraft()});
@@ -632,8 +635,11 @@ function itemHTML(it,i){
   const p=itemPrice(it);
   return `<div class="prod" data-i="${i}">
     <div class="spread" style="margin-bottom:8px"><input data-f="desc" value="${esc(it.desc)}" placeholder="¿Qué es? (ej. Maqueta)" style="font-weight:650">${cot.items.length>1?`<button class="btn sm danger" data-act="c-del" data-i="${i}" style="flex:none" aria-label="Quitar">✕</button>`:""}</div>
-    <div class="grid3"><label class="f">Piezas<input data-f="cant" type="number" inputmode="numeric" value="${esc(it.cant)}"></label><label class="f">Horas c/u<input data-f="horas" type="number" inputmode="decimal" value="${esc(it.horas)}" placeholder="0"></label><label class="f">Gramos c/u<input data-f="gramos" type="number" inputmode="decimal" value="${esc(it.gramos)}" placeholder="0"></label></div>
-    <div style="margin-top:10px">${rolloChips([it.fid],"c-rollo",` data-i="${i}"`)}</div>
+    <div class="${it.multi?"grid2":"grid3"}"><label class="f">Piezas<input data-f="cant" type="number" inputmode="numeric" value="${esc(it.cant)}"></label><label class="f">Horas c/u<input data-f="horas" type="number" inputmode="decimal" value="${esc(it.horas)}" placeholder="0"></label>${it.multi?"":`<label class="f">Gramos c/u<input data-f="gramos" type="number" inputmode="decimal" value="${esc(it.gramos)}" placeholder="0"></label>`}</div>
+    <div class="spread" style="margin:10px 0 6px"><span class="lbl">Color</span><div class="seg" style="width:190px"><button type="button" data-act="c-multi" data-i="${i}" data-v="0" aria-pressed="${!it.multi}">1 color</button><button type="button" data-act="c-multi" data-i="${i}" data-v="1" aria-pressed="${!!it.multi}">Varios</button></div></div>
+    ${rolloChips(it.multi?(it.usos||[]).map(u=>u.fid):[it.fid],"c-rollo",` data-i="${i}"`)}
+    ${it.multi?`<div class="stack" style="gap:8px;margin-top:6px">${(it.usos||[]).map((u,j)=>{const f=fil(u.fid);return `<div class="row" style="flex-wrap:nowrap">${sw(f?f.hex:"#ccc")}<span style="flex:1">${esc(f?f.color:"Rollo")}</span><input data-ug="${j}" type="number" inputmode="decimal" placeholder="g c/u" value="${esc(u.g)}" style="width:110px"></div>`}).join("")}</div>
+    <p class="small muted" style="margin-top:6px">${(it.usos||[]).length?`Total <b data-tg>${fmt(sumG(it),1)}</b> g por pieza. `:"Toca los colores que lleva. "}Usa los gramos por color de Bambu Studio: ya incluyen la purga del AMS.</p>`:""}
     <details class="more" style="margin-top:6px"><summary>Tu tiempo y cómo sale el precio</summary><div class="stack" style="margin-top:8px">
       <div class="grid2"><label class="f">Post-proceso (min c/u)<input data-f="postMin" type="number" inputmode="decimal" value="${esc(it.postMin)}" placeholder="0"></label><label class="f">Diseño (horas total)<input data-f="dis" type="number" inputmode="decimal" value="${esc(it.dis)}" placeholder="0"></label></div>
       <div class="kv" data-kv></div></div></details>
@@ -644,8 +650,8 @@ function itemHTML(it,i){
 function refreshItem(box,it){
   const p=itemPrice(it),k=costoPieza(it),gan=p-k.total;
   box.querySelector("[data-p]").textContent=money0(p);box.querySelector("[data-plbl]").textContent=it.manual?"Precio que pusiste":"Precio por pieza";
-  const inp=box.querySelector('[data-f="normal"]');if(document.activeElement!==inp)inp.value=p;
-  box.querySelector("[data-kv]").innerHTML=`<div><span>Material</span><span>${money(k.material)}</span></div><div><span>Luz</span><span>${money(k.luz)}</span></div><div><span>Desgaste</span><span>${money(k.desgaste)}</span></div><div><span>Tu tiempo</span><span>${money(k.labor)}</span></div><div><span><b>Costo real</b></span><span><b>${money(k.total)}</b></span></div><div><span>Ganancia por pieza</span><span>${money(gan)}</span></div><div><span>Ganancia por hora de impresora</span><span>${n(it.horas)?money((p-k.maquina)/n(it.horas)):"—"}</span></div><div><span>Con tu tarifa anterior</span><span>${money(precioAnterior(it))}</span></div>`;
+  const tg=box.querySelector("[data-tg]");if(tg)tg.textContent=fmt(sumG(it),1);const inp=box.querySelector('[data-f="normal"]');if(document.activeElement!==inp)inp.value=p;
+  box.querySelector("[data-kv]").innerHTML=`<div><span>Material</span><span>${money(k.material)}</span></div><div><span>Luz</span><span>${money(k.luz)}</span></div><div><span>Desgaste</span><span>${money(k.desgaste)}</span></div><div><span>Tu tiempo</span><span>${money(k.labor)}</span></div><div><span><b>Costo real</b></span><span><b>${money(k.total)}</b></span></div><div><span>Ganancia por pieza</span><span>${money(gan)}</span></div><div><span>Ganancia por hora de impresora</span><span>${n(it.horas)?money((p-k.maquina)/n(it.horas)):"—"}</span></div><div><span>Precio por costo real</span><span>${money(precioReal(it))}</span></div><div><span>Precio por hora ($${n(C().hora1)} / $${n(C().hora2)})</span><span>${money(precioAnterior(it))}</span></div><div><span>Se usa</span><span><b>${it.manual?"El que pusiste":precioAnterior(it)>=precioReal(it)?"Por hora":"Costo real"}</b></span></div>`;
 }
 function cotTotals(){
   document.querySelectorAll("#c-items .prod[data-i]").forEach(b=>refreshItem(b,cot.items[+b.dataset.i]));
@@ -656,14 +662,18 @@ function cotTotals(){
 ACT["c-add"]=()=>{cot.items.push(blankItem());saveDraft();render();const ins=document.querySelectorAll('[data-f="desc"]');ins[ins.length-1].focus()};
 ACT["c-del"]=b=>{cot.items.splice(+b.dataset.i,1);saveDraft();render()};
 ACT["c-auto"]=b=>{cot.items[+b.dataset.i].manual=false;saveDraft();render()};
-ACT["c-rollo"]=b=>{const it=cot.items[+b.dataset.i];it.fid=it.fid===b.dataset.fid?"":b.dataset.fid;saveDraft();
+ACT["c-multi"]=b=>{const it=cot.items[+b.dataset.i],m=b.dataset.v==="1";if(m===!!it.multi)return;
+  if(m){it.usos=it.fid?[{fid:it.fid,g:it.gramos}]:[]}else{const u=(it.usos||[])[0];it.fid=u?u.fid:"";it.gramos=sumG(it)||""}it.multi=m;saveDraft();render()};
+ACT["c-rollo"]=b=>{const it=cot.items[+b.dataset.i];if(it.multi){it.usos=it.usos||[];const j=it.usos.findIndex(u=>u.fid===b.dataset.fid);if(j>=0)it.usos.splice(j,1);else it.usos.push({fid:b.dataset.fid,g:""});it.gramos=sumG(it);saveDraft();render();return}
+  it.fid=it.fid===b.dataset.fid?"":b.dataset.fid;saveDraft();
   b.closest(".chips").querySelectorAll("[data-fid]").forEach(x=>x.setAttribute("aria-pressed",String(x.dataset.fid===it.fid)));cotTotals()};
 function docFromCot(tipo){
-  const items=cot.items.map(i=>({desc:String(i.desc||"").trim()||"Pieza impresa en 3D",cant:Math.max(1,Math.round(n(i.cant))),horas:n(i.horas),gramos:n(i.gramos),fid:i.fid||"",postMin:n(i.postMin),dis:n(i.dis),normal:itemPrice(i)}));
+  const items=cot.items.map(i=>({desc:String(i.desc||"").trim()||"Pieza impresa en 3D",cant:Math.max(1,Math.round(n(i.cant))),horas:n(i.horas),gramos:r2(sumG(i)),fid:i.multi?"":(i.fid||""),multi:i.multi?1:0,usos:i.multi?(i.usos||[]).filter(u=>u.fid&&n(u.g)>0).map(u=>({fid:u.fid,g:n(u.g)})):[],postMin:n(i.postMin),dis:n(i.dis),normal:itemPrice(i)}));
   return{tipo,cliente:cot.cliente.trim()||"Cliente",items,pct:cotPct(),entrega:cot.entrega,vigencia:n(cot.vigencia),notas:cot.notas,aviso:cot.aviso?1:0};
 }
 ACT["c-acciones"]=()=>{
   if(cot.items.some(i=>!itemPrice(i))){toast("A un producto le falta horas, gramos o precio");return}
+  if(cot.items.some(i=>i.multi&&(i.usos||[]).some(u=>!n(u.g)))){toast("Pon los gramos de cada color");return}
   openSheet("¿Qué hacemos?",`
     <button class="btn full" data-act="c-pdf" data-t="cot">${svg('<path d="M12 3v12M7 10l5 5 5-5"/><path d="M5 21h14"/>')} Cotización en PDF</button>
     <button class="btn full sec" data-act="c-pdf" data-t="ticket">Ticket de venta</button>
@@ -731,7 +741,7 @@ ACT.doc=b=>{const d=state.docs.find(x=>x.id===b.dataset.id);
     ${d.tipo==="cot"?`<button class="btn full sec" data-act="d-edit" data-id="${esc(d.id)}">Editar</button><button class="btn full sec" data-act="d-ticket" data-id="${esc(d.id)}">Hacer ticket</button>${d.vendida?"":`<button class="btn full ok" data-act="d-vendi" data-id="${esc(d.id)}">Ya la vendí</button>`}`:""}
     <button class="btn full danger" data-act="d-borrar" data-id="${esc(d.id)}">Borrar</button>`)};
 ACT["d-pdf"]=b=>{const d=state.docs.find(x=>x.id===b.dataset.id);try{d.tipo==="cot"?pdfCot(d):pdfTicket(d)}catch(e){toast("No se pudo crear el PDF")}};
-ACT["d-edit"]=b=>{const d=state.docs.find(x=>x.id===b.dataset.id);cot={editId:d.id,cliente:d.cliente,pct:n(d.pct),entrega:d.entrega||"",vigencia:d.vigencia||15,notas:d.notas||"",aviso:!!d.aviso,items:d.items.map(i=>({...i,manual:true}))};saveDraft();closeSheet();go("cotizar");render()};
+ACT["d-edit"]=b=>{const d=state.docs.find(x=>x.id===b.dataset.id);cot={editId:d.id,cliente:d.cliente,pct:n(d.pct),entrega:d.entrega||"",vigencia:d.vigencia||15,notas:d.notas||"",aviso:!!d.aviso,items:d.items.map(i=>({...i,multi:!!i.multi,usos:(i.usos||[]).map(u=>({...u})),manual:true}))};saveDraft();closeSheet();go("cotizar");render()};
 ACT["d-ticket"]=b=>{const d=state.docs.find(x=>x.id===b.dataset.id),num=Math.max(1,Math.round(n(C().folioT)));const t={...clean(d),id:uid(),tipo:"ticket",folio:"T-"+String(num).padStart(4,"0"),fecha:today(),vendida:0};C().folioT=num+1;saveCfg();save("docs",t);closeSheet();try{pdfTicket(t)}catch(e){toast("No se pudo crear el PDF")}};
 ACT["d-vendi"]=b=>{const d=state.docs.find(x=>x.id===b.dataset.id);closeSheet();vf=newVf(ventaDesdeDoc(d));setTimeout(openVendi,150)};
 ACT["d-borrar"]=b=>{if(confirm("¿Borrar este documento?")){closeSheet();remove("docs",b.dataset.id,"Borrado")}};
@@ -776,7 +786,7 @@ PAGES.ajustes={html(){const c=C();return `${back()}<div class="page-h"><div><h1>
   <div class="card"><h2>Conexión</h2><p class="small muted" style="margin-bottom:10px">${conn&&conn.url?"Conectado a tu Google Sheet.":"Sin conectar: los datos solo están en este dispositivo."} ${Object.keys(outbox).length?`Faltan ${Object.keys(outbox).length} cambio(s) por subir.`:""}</p>
     <div class="stack"><label class="f">URL del Apps Script<input id="a-url" type="url" value="${esc(conn?conn.url:"")}"></label><label class="f">Clave<input id="a-key" type="password" value="${esc(conn?conn.key:"")}"></label><div class="grid2"><button class="btn" data-act="a-conn">Guardar y sincronizar</button><button class="btn sec" data-act="a-full">Descargar todo de nuevo</button></div></div></div>
   <div class="card"><h2>Dinero</h2><div class="grid2">${cfgIn("fondoInicial","Fondo con el que empezaste")}${cfgIn("pMi","Para ti (% de la ganancia)",{pct:1,hint:"El resto va al fondo"})}</div></div>
-  <div class="card"><h2>Precio</h2><div class="grid2">${cfgIn("margen","Ganancia sobre costo (%)",{pct:1})}${cfgIn("gmin","Ganancia mínima por hora")}${cfgIn("min","Pedido mínimo")}${cfgIn("mayMin","Mayoreo desde (piezas)")}${cfgIn("mayPct","Descuento mayoreo (%)",{pct:1})}${cfgIn("dis","Tu hora de diseño")}${cfgIn("post","Tu hora de post-proceso")}</div></div>
+  <div class="card"><h2>Precio</h2><p class="small muted" style="margin-bottom:10px">El cotizador usa el más alto entre tu precio por hora y el costo real con ganancia.</p><div class="grid2">${cfgIn("hora1","Precio por hora (piezas cortas)")}${cfgIn("hora2","Precio por hora (piezas largas)")}${cfgIn("horaLim","Pieza larga desde (horas)")}${cfgIn("margen","Ganancia sobre costo (%)",{pct:1})}${cfgIn("gmin","Ganancia mínima por hora")}${cfgIn("min","Pedido mínimo")}${cfgIn("mayMin","Mayoreo desde (piezas)")}${cfgIn("mayPct","Descuento mayoreo (%)",{pct:1})}${cfgIn("dis","Tu hora de diseño")}${cfgIn("post","Tu hora de post-proceso")}</div></div>
   <div class="card"><h2>Costos reales</h2><div class="grid2">${cfgIn("precioKg","Filamento por kg")}${cfgIn("merma","Fallas y merma (%)",{pct:1})}${cfgIn("watts","Consumo impresora (W)")}${cfgIn("kwh","Precio kWh con IVA")}${cfgIn("impresora","Precio impresora")}${cfgIn("vida","Vida útil (horas)")}${cfgIn("mant","Mantenimiento por hora")}</div>
     <p class="small muted" style="margin-top:8px">Una hora de impresora te cuesta ${money(luzHora()+horaMaq())}: ${money(luzHora())} de luz y ${money(horaMaq())} de desgaste.</p></div>
   <div class="card"><h2>Dentista y rollos</h2><div class="grid2">${cfgIn("dent","Precio pieza dental")}${cfgIn("dentHoras","Horas por pieza")}${cfgIn("dentGramos","Gramos por pieza")}${cfgIn("secadoDias","Secar cada (días)")}${cfgIn("stockBajo","Avisar bajo de (g)")}</div></div>
@@ -820,7 +830,7 @@ function pdfCot(d){
   T.forEach(([a,b])=>{doc.setTextColor(...GREYc);doc.setFontSize(9.5);doc.text(a,bx,ty);doc.setTextColor(...NAVYc);doc.text(b,W-M,ty,{align:"right"});ty+=6});
   doc.setFillColor(...NAVYc);doc.roundedRect(bx-3,ty-2,77,13,2,2,"F");doc.setTextColor(255);doc.setFont("helvetica","bold");doc.setFontSize(12);doc.text("TOTAL",bx,ty+6.5);doc.text(PM(t.total),W-M,ty+6.5,{align:"right"});doc.setFillColor(...ORc);doc.rect(bx-3,ty+11,77,1.2,"F");
   doc.setFont("helvetica","bold");doc.setFontSize(10.5);doc.setTextColor(...NAVYc);doc.text("Detalles de impresión",M,y);let ly=y+6;doc.setFont("helvetica","normal");doc.setFontSize(9.5);doc.setTextColor(...GREYc);
-  d.items.filter(i=>i.horas||i.gramos).forEach(i=>{const f=fil(i.fid),L=doc.splitTextToSize(`${i.desc}: ${i.horas?(Math.round(i.horas*10)/10)+" h":""}${i.horas&&i.gramos?" · ":""}${i.gramos?Math.round(i.gramos)+" g por pieza":""}${f?" · "+f.material+" "+f.color:""}`,bx-M-8);doc.text(L,M,ly);ly+=L.length*4.6+1});
+  d.items.filter(i=>i.horas||i.gramos).forEach(i=>{const f=fil(i.fid),cs=i.multi?(i.usos||[]).map(u=>fil(u.fid)).filter(Boolean).map(x=>x.color).join(", "):"",L=doc.splitTextToSize(`${i.desc}: ${i.horas?(Math.round(i.horas*10)/10)+" h":""}${i.horas&&i.gramos?" · ":""}${i.gramos?Math.round(i.gramos)+" g por pieza":""}${cs?" · Colores: "+cs:f?" · "+f.material+" "+f.color:""}`,bx-M-8);doc.text(L,M,ly);ly+=L.length*4.6+1});
   y=Math.max(ly,ty+18)+6;
   const N=[];if(d.entrega)N.push("Tiempo de entrega: "+d.entrega);if(d.vigencia)N.push(`Vigencia de la cotización: ${d.vigencia} días`);if(d.notas)N.push(d.notas);
   if(N.length){need(12+N.length*6);doc.setFont("helvetica","bold");doc.setFontSize(10.5);doc.setTextColor(...NAVYc);doc.text("Detalles de entrega",M,y);y+=6;doc.setFont("helvetica","normal");doc.setFontSize(10);N.forEach(x=>{const L=doc.splitTextToSize("•  "+x,W-2*M);need(L.length*5);doc.text(L,M,y);y+=L.length*5+1.5})}

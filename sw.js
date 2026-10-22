@@ -1,5 +1,5 @@
 /* 3DPRINTECH · funciona sin internet. Sube el número de versión cuando cambies la app. */
-const VERSION = "3dp-v1";
+const VERSION = "3dp-v2";
 const SHELL = ["./", "index.html", "jspdf.umd.min.js", "logo.png", "icon-192.png", "icon-512.png", "apple-touch-icon.png", "manifest.webmanifest"];
 
 self.addEventListener("install", e => {
